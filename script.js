@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 const gridSize = 4;
 let grid = [];
 let score = 0;
@@ -87,7 +89,7 @@ function moveRowLeft(row) {
     return merged;
 }
 
-// --- Поворот матрицы для упрощения движений ---
+// --- Поворот матрицы ---
 function rotateGrid(times) {
     for (let t = 0; t < times; t++) {
         let newGrid = Array(gridSize)
@@ -102,7 +104,7 @@ function rotateGrid(times) {
     }
 }
 
-// --- Универсальное движение ---
+// --- Движение ---
 function move(direction) {
     saveState();
 
@@ -140,17 +142,14 @@ function move(direction) {
 
 // --- Проверка на невозможность хода ---
 function canMove() {
-    // есть пустые клетки
     for (let r = 0; r < gridSize; r++)
         for (let c = 0; c < gridSize; c++)
             if (grid[r][c] === 0) return true;
 
-    // можно объединить по горизонтали
     for (let r = 0; r < gridSize; r++)
         for (let c = 0; c < gridSize - 1; c++)
             if (grid[r][c] === grid[r][c + 1]) return true;
 
-    // можно объединить по вертикали
     for (let r = 0; r < gridSize - 1; r++)
         for (let c = 0; c < gridSize; c++)
             if (grid[r][c] === grid[r + 1][c]) return true;
@@ -190,3 +189,5 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowUp") move("up");
     if (e.key === "ArrowDown") move("down");
 });
+
+}); // конец DOMContentLoaded
