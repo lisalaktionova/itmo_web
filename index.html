@@ -1,90 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>2048 — Лабораторная</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>2048</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div>
-        <h1>2048</h1>
-        <p class="subtitle">Веб-версия — лабораторная</p>
-      </div>
-      <div class="score-area">
-        <div class="score-box">
-          <div class="label">Очки</div>
-          <div id="score" class="value">0</div>
-        </div>
-        <div class="score-box">
-          <div class="label">Лучший</div>
-          <div id="best" class="value">0</div>
-        </div>
-      </div>
-    </header>
+<h1>2048</h1>
 
-    <main class="main">
-      <section class="game-panel">
-        <div id="board" class="board" aria-label="Игровое поле"></div>
 
-        <div id="mobile-controls" class="mobile-controls" aria-hidden="true">
-          <button data-dir="up" class="mbtn">↑</button>
-          <div class="row">
-            <button data-dir="left" class="mbtn">←</button>
-            <button data-dir="down" class="mbtn">↓</button>
-            <button data-dir="right" class="mbtn">→</button>
-          </div>
-        </div>
+<div id="score-container">Очки: <span id="score">0</span></div>
 
-        <div class="controls">
-          <button id="undo-btn" class="control">↶ Отмена</button>
-          <button id="restart-btn" class="control">⟳ Начать заново</button>
-          <button id="leaders-btn" class="control">🏆 Лидеры</button>
-        </div>
-      </section>
 
-      <aside class="sidebar">
-        <div class="leaderboard card">
-          <h3>Топ-10 рекордов</h3>
-          <div id="leadersList" class="leaders-list"></div>
-        </div>
-        <div class="info card">
-          <p>Управление: клавиши-стрелки (десктоп), свайпы или кнопки (мобильные).</p>
-        </div>
-      </aside>
-    </main>
-  </div>
+<div id="game-container">
+<div id="grid"></div>
+</div>
 
-  <!-- Game Over Modal -->
-  <div id="gameOverModal" class="modal hidden" role="dialog" aria-hidden="true">
-    <div class="modal-box">
-      <div id="gameOverMessage" class="modal-text">Игра окончена</div>
-      <input id="nameInput" placeholder="Введите имя" class="modal-input" />
-      <div class="modal-actions">
-        <button id="saveScoreBtn" class="modal-btn">Сохранить результат</button>
-        <button id="playAgainBtn" class="modal-btn">Начать заново</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Leaders Modal -->
-  <div id="leadersModal" class="modal hidden" role="dialog" aria-hidden="true">
-    <div class="modal-box">
-      <h3>Таблица лидеров</h3>
-      <table id="leadersTable" class="leaders-table" aria-label="Таблица лидеров">
-        <thead>
-          <tr><th>Имя</th><th>Очки</th><th>Дата</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="modal-actions">
-        <button id="closeLeadersBtn" class="modal-btn">Закрыть</button>
-      </div>
-    </div>
-  </div>
+<div id="controls">
+<button id="undo-btn">Отмена</button>
+<button id="restart-btn">Начать заново</button>
+<button id="leaders-btn">Лидеры</button>
+</div>
 
-  <script src="script.js"></script>
+
+<!-- Модалка конца игры -->
+<div id="game-over-modal" class="modal hidden">
+<div class="modal-content">
+<p id="game-over-text">Игра окончена!</p>
+<input id="username" placeholder="Ваше имя" />
+<button id="save-score-btn">Сохранить результат</button>
+<button id="close-modal-btn">Закрыть</button>
+</div>
+</div>
+
+
+<!-- Лидерборд -->
+<div id="leaderboard-modal" class="modal hidden">
+<div class="modal-content">
+<h2>Таблица лидеров</h2>
+<table id="leaderboard-table"></table>
+<button id="close-leaders-btn">Закрыть</button>
+</div>
+</div>
+
+
+<script src="script.js"></script>
 </body>
 </html>
