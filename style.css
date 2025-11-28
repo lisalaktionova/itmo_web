@@ -8,22 +8,22 @@ padding: 20px;
 
 
 #game-container {
-width: 380px;
-margin: 20px auto;
+  width: 100%;
+  max-width: 340px; 
+  margin: 20px auto;
+  padding: 0 10px;
 }
-
 
 #grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); 
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  padding: 10px;
   background: #bbada0;
+  padding: 10px;
   border-radius: 6px;
 }
 
 .tile {
-  aspect-ratio: 1 / 1; 
   background: #cdc1b4;
   display: flex;
   justify-content: center;
@@ -31,7 +31,11 @@ margin: 20px auto;
   font-size: 24px;
   font-weight: bold;
   border-radius: 4px;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 100%;
 }
+
 
 
 .modal {
