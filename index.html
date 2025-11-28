@@ -9,42 +9,36 @@
 <body>
 <h1>2048</h1>
 
-
 <div id="score-container">Очки: <span id="score">0</span></div>
 
-
 <div id="game-container">
-<div id="grid"></div>
+  <div id="grid"></div>
 </div>
-
 
 <div id="controls">
-<button id="undo-btn">Отмена</button>
-<button id="restart-btn">Начать заново</button>
-<button id="leaders-btn">Лидеры</button>
+  <button id="undo-btn">Отмена</button>
+  <button id="restart-btn">Начать заново</button>
+  <button id="leaders-btn">Лидеры</button>
 </div>
-
 
 <!-- Модалка конца игры -->
 <div id="game-over-modal" class="modal hidden">
-<div class="modal-content">
-<p id="game-over-text">Игра окончена!</p>
-<input id="username" placeholder="Ваше имя" />
-<button id="save-score-btn">Сохранить результат</button>
-<button id="close-modal-btn">Закрыть</button>
+  <div class="modal-content">
+    <p id="game-over-text">Игра окончена!</p>
+    <input id="username" placeholder="Ваше имя" />
+    <button id="save-score-btn">Сохранить результат</button>
+    <button id="close-modal-btn">Закрыть</button>
+  </div>
 </div>
-</div>
-
 
 <!-- Лидерборд -->
 <div id="leaderboard-modal" class="modal hidden">
-<div class="modal-content">
-<h2>Таблица лидеров</h2>
-<table id="leaderboard-table"></table>
-<button id="close-leaders-btn">Закрыть</button>
+  <div class="modal-content">
+    <h2>Таблица лидеров</h2>
+    <table id="leaderboard-table"></table>
+    <button id="close-leaders-btn">Закрыть</button>
+  </div>
 </div>
-</div>
-
 
 <script src="script.js"></script>
 </body>
