@@ -128,53 +128,158 @@ function rotateClockwise() {
 }
 
 function moveLeft() {
-  if (gameOver) return;
-  saveState();
-  let moved = false;
-  let gainedTotal = 0;
+    saveState();
+    let moved = false;
 
-  for (let r = 0; r < 4; r++) {
-    const row = board[r].slice();
-    const { newLine, gained } = compressAndMergeLine(row);
-    gainedTotal += gained;
-    board[r] = newLine;
-    if (newLine.toString() !== row.toString()) moved = true;
-  }
+    for (let i = 0; i < 4; i++) {
+        let row = board[i].filter(x => x !== 0); // убрать нули
 
-  if (moved) {
-    score += gainedTotal;
-    addRandomTile();
-    updateScore();
-    drawBoard();
-    saveToStorage();
-    if (!canMove()) finishGame();
-  } else {
-    // если не было движения, откат предыдущего сохранённого состояния
-    // (так как мы вызвали saveState в начале)
-    if (previousState) {
-      // не восстанавливаем undo-буфер полностью, оставляем возможность undo предыдущего шага
-      // просто очищаем previousState, т.к. ход не состоялся
-      previousState = null;
+        // слияние плиток
+        for (let j = 0; j < row.length - 1; j++) {
+            if (row[j] === row[j + 1]) {
+                row[j] *= 2;
+                score += row[j];
+                row[j + 1] = 0;
+            }
+        }
+
+        // убрать нули после объединений
+        row = row.filter(x => x !== 0);
+
+        // добить нулями до 4
+        while (row.length < 4) row.push(0);
+
+        // записать строку обратно в board
+        for (let j = 0; j < 4; j++) {
+            if (board[i][j] !== row[j]) moved = true;
+            board[i][j] = row[j];
+        }
     }
-  }
+
+    if (moved) {
+        addRandomTile();
+        drawBoard();
+        updateScore();
+        checkGameOver();
+    }
 }
 
 function moveRight() {
-  rotateClockwise(); rotateClockwise();
-  moveLeft();
-  rotateClockwise(); rotateClockwise();
+    saveState();
+    let moved = false;
+
+    for (let i = 0; i < 4; i++) {
+        let row = board[i].filter(x => x !== 0);
+
+        // разворачиваем строку для удобства
+        row.reverse();
+
+        for (let j = 0; j < row.length - 1; j++) {
+            if (row[j] === row[j + 1]) {
+                row[j] *= 2;
+                score += row[j];
+                row[j + 1] = 0;
+            }
+        }
+
+        row = row.filter(x => x !== 0);
+
+        while (row.length < 4) row.push(0);
+
+        row.reverse(); // вернуть обратно
+
+        for (let j = 0; j < 4; j++) {
+            if (board[i][j] !== row[j]) moved = true;
+            board[i][j] = row[j];
+        }
+    }
+
+    if (moved) {
+        addRandomTile();
+        drawBoard();
+        updateScore();
+        checkGameOver();
+    }
 }
 
 function moveUp() {
-  rotateClockwise(); rotateClockwise(); rotateClockwise();
-  moveLeft();
-  rotateClockwise();
+    saveState();
+    let moved = false;
+
+    for (let col = 0; col < 4; col++) {
+        let column = [];
+
+        for (let row = 0; row < 4; row++) {
+            if (board[row][col] !== 0) column.push(board[row][col]);
+        }
+
+        for (let r = 0; r < column.length - 1; r++) {
+            if (column[r] === column[r + 1]) {
+                column[r] *= 2;
+                score += column[r];
+                column[r + 1] = 0;
+            }
+        }
+
+        column = column.filter(x => x !== 0);
+
+        while (column.length < 4) column.push(0);
+
+        for (let row = 0; row < 4; row++) {
+            if (board[row][col] !== column[row]) moved = true;
+            board[row][col] = column[row];
+        }
+    }
+
+    if (moved) {
+        addRandomTile();
+        drawBoard();
+        updateScore();
+        checkGameOver();
+    }
 }
 
 function moveDown() {
-  rotateClockwise();
-  moveLeft();
-  rotateClockwise(); rotateClockwise(); rotateClockwise();
+    saveState();
+    let moved = false;
+
+    for (let col = 0; col < 4; col++) {
+        let column = [];
+
+        for (let row = 0; row < 4; row++) {
+            if (board[row][col] !== 0) column.push(board[row][col]);
+        }
+
+        // вниз → разворот
+        column.reverse();
+
+        for (let r = 0; r < column.length - 1; r++) {
+            if (column[r] === column[r + 1]) {
+                column[r] *= 2;
+                score += column[r];
+                column[r + 1] = 0;
+            }
+        }
+
+        column = column.filter(x => x !== 0);
+
+        while (column.length < 4) column.push(0);
+
+        // вернуть обратно
+        column.reverse();
+
+        for (let row = 0; row < 4; row++) {
+            if (board[row][col] !== column[row]) moved = true;
+            board[row][col] = column[row];
+        }
+    }
+
+    if (moved) {
+        addRandomTile();
+        drawBoard();
+        updateScore();
+        checkGameOver();
+    }
 }
 
 function canMove() {
