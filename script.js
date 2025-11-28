@@ -147,16 +147,31 @@ function checkGameOver(){
 }
 
 // --- Сохранение результата ---
-saveScoreBtn.onclick = ()=>{
-    const name = usernameInput.value.trim()||"Аноним";
-    const leaders = JSON.parse(localStorage.getItem("leaders")||"[]");
-    leaders.push({name,score,date:new Date().toISOString()});
-    leaders.sort((a,b)=>b.score-a.score);
-    localStorage.setItem("leaders", JSON.stringify(leaders.slice(0,10)));
-    document.getElementById("game-over-text").textContent = "Ваш рекорд сохранен";
-    usernameInput.style.display="none";
-    saveScoreBtn.style.display="none";
+saveScoreBtn.onclick = () => {
+    const name = usernameInput.value.trim() || "Аноним";
+
+    // Загружаем существующих лидеров
+    const leaders = JSON.parse(localStorage.getItem("leaders") || "[]");
+
+    // Добавляем новый рекорд
+    leaders.push({ name, score, date: new Date().toISOString() });
+
+    // Сортируем и оставляем топ-10
+    leaders.sort((a, b) => b.score - a.score);
+    localStorage.setItem("leaders", JSON.stringify(leaders.slice(0, 10)));
+
+    // Обновляем модалку
+    const text = document.getElementById("game-over-text");
+    if (text) text.textContent = "Ваш рекорд сохранен!";
+
+    // Скрываем инпут и кнопку сохранения
+    usernameInput.style.display = "none";
+    saveScoreBtn.style.display = "none";
+
+    // Обновляем таблицу лидеров и сразу показываем её
     renderLeadersList();
+    leaderboardModal.classList.remove("hidden");
+    gameOverModal.classList.add("hidden");
 };
 
 // --- Таблица лидеров ---
