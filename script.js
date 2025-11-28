@@ -4,6 +4,8 @@ let score = 0;
 let previousGrid = null;
 let previousScore = 0;
 
+document.addEventListener("DOMContentLoaded", () => {
+
 const scoreSpan = document.getElementById("score");
 const gridContainer = document.getElementById("grid");
 
@@ -194,6 +196,7 @@ function renderLeadersList(){
     });
 }
 
+});
 // --- Кнопка лидеров ---
 leadersBtn.onclick = ()=>{
     renderLeadersList();
