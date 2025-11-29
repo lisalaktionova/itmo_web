@@ -5,16 +5,15 @@ let previousGrid = null;
 let previousScore = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // --- Элементы DOM ---
     const scoreSpan = document.getElementById("score");
     const gridContainer = document.getElementById("grid");
-
     const undoBtn = document.getElementById("undo-btn");
     const restartBtn = document.getElementById("restart-btn");
     const leadersBtn = document.getElementById("leaders-btn");
-
     const gameOverModal = document.getElementById("game-over-modal");
     const leaderboardModal = document.getElementById("leaderboard-modal");
-
     const usernameInput = document.getElementById("username");
     const saveScoreBtn = document.getElementById("save-score-btn");
     const closeModalBtn = document.getElementById("close-modal-btn");
@@ -64,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
         previousScore = score;
     }
 
-    // --- Undo ---
     undoBtn.onclick = () => {
         if (previousGrid) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -91,7 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr;
     }
 
-    // --- Поворот матрицы ---
     function rotateGrid(times) {
         for (let t = 0; t < times; t++) {
             let newGrid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -102,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- Универсальное движение ---
     function move(direction) {
         saveState();
         if (direction === "left") {
@@ -128,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         checkGameOver();
     }
 
-    // --- Проверка доступных ходов ---
     function canMove() {
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
@@ -142,14 +137,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
-    // --- Конец игры ---
     function checkGameOver() {
         if (!canMove()) {
             gameOverModal.classList.remove("hidden");
         }
     }
 
-    // --- Таблица лидеров ---
     function renderLeadersList() {
         leaderboardTable.innerHTML = "";
         const header = document.createElement("tr");
@@ -171,18 +164,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Кнопка лидеров ---
     leadersBtn.onclick = () => {
         renderLeadersList();
         leaderboardModal.classList.remove("hidden");
         gameOverModal.classList.add("hidden");
     };
 
-    // --- Закрытие модалок ---
     closeModalBtn.onclick = () => gameOverModal.classList.add("hidden");
     closeLeadersBtn.onclick = () => leaderboardModal.classList.add("hidden");
 
-    // --- Сохранение результата ---
     saveScoreBtn.onclick = () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("leaders") || "[]");
@@ -199,10 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
         gameOverModal.classList.add("hidden");
     };
 
-    // --- Кнопка рестарта ---
     restartBtn.onclick = startGame;
 
-    // --- Старт игры ---
     function startGame() {
         score = 0;
         initGrid();
@@ -216,11 +204,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startGame();
 
-    // --- Управление стрелками ---
-    document.addEventListener("keydown", (e) => {
+    document.addEventListener("keydown", e => {
         if (e.key === "ArrowLeft") move("left");
         if (e.key === "ArrowRight") move("right");
         if (e.key === "ArrowUp") move("up");
         if (e.key === "ArrowDown") move("down");
     });
 });
+
