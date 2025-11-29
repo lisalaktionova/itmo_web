@@ -141,6 +141,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    const closeLeadersBtn = document.getElementById("close-leaders-btn");
+
+// Закрытие таблицы лидеров
+closeLeadersBtn.onclick = () => {
+    leaderboardModal.classList.add("hidden");
+};
+
     leadersBtn.onclick = () => {
         renderLeadersList();
         leaderboardModal.classList.remove("hidden");
