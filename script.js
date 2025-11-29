@@ -220,7 +220,7 @@ function startGame(){
     usernameInput.style.display="block";
     saveScoreBtn.style.display="block";
     gameOverModal.classList.add("hidden");
-}
+};
 
 startGame();
 
