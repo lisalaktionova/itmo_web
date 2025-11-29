@@ -126,6 +126,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!canMove()) gameOverModal.classList.remove("hidden");
     }
 
+    function hasMoves() {
+    // Если есть пустая клетка — ходы есть
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            if (grid[r][c] === 0) return true;
+        }
+    }
+
+    // Если можно слить соседние плитки — ходы есть
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            if (c < GRID_SIZE - 1 && grid[r][c] === grid[r][c+1]) return true;
+            if (r < GRID_SIZE - 1 && grid[r][c] === grid[r+1][c]) return true;
+        }
+    }
+
+    // Ходов нет
+    return false;
+}
+
     // Лидерборд
     function renderLeadersList() {
         leaderboardTable.innerHTML = "";
