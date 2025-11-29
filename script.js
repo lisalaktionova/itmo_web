@@ -1,3 +1,4 @@
+// script.js
 const GRID_SIZE = 4;
 let grid = [];
 let score = 0;
@@ -45,9 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
                 if (grid[r][c] === 0) empty.push({ r, c });
-        if (!empty.length) return;
+        if (!empty.length) return false;
         const { r, c } = empty[Math.floor(Math.random() * empty.length)];
         grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+        return true;
     }
 
     function addStartTiles() {
@@ -70,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Логика движения плиток
+    // Логика движения плиток по строке влево
     function moveRowLeft(row) {
         let arr = row.filter(v => v !== 0);
         let scoreAdd = 0;
@@ -88,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr;
     }
 
+    // Поворот grid (по часовой) times раз
     function rotateGrid(times) {
         for (let t = 0; t < times; t++) {
             let newGrid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -98,53 +101,72 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function move(direction) {
-        saveState();
-        if (direction === "left") for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
-        if (direction === "right") { rotateGrid(2); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(2); }
-        if (direction === "up") { rotateGrid(3); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(1); }
-        if (direction === "down") { rotateGrid(1); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(3); }
-        addRandomTile();
-        renderGrid();
-        checkGameOver();
+    // Сравнение grid'ов
+    function gridsEqual(a, b) {
+        return JSON.stringify(a) === JSON.stringify(b);
     }
 
+    // Выполнить ход: возвращает true если поле изменилось (т.е. ход был валидным)
+    function performMove(direction) {
+        // Сохраняем текущее состояние, чтобы сравнить позже
+        const before = JSON.parse(JSON.stringify(grid));
+        if (direction === "left") {
+            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
+        } else if (direction === "right") {
+            rotateGrid(2);
+            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
+            rotateGrid(2);
+        } else if (direction === "up") {
+            rotateGrid(3);
+            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
+            rotateGrid(1);
+        } else if (direction === "down") {
+            rotateGrid(1);
+            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
+            rotateGrid(3);
+        }
+        return !gridsEqual(before, grid);
+    }
+
+    // Основная функция движения — проверяет изменение поля, добавляет плитку и рендерит
+    function move(direction) {
+        saveState(); // сохранить для undo
+        const moved = performMove(direction);
+        if (!moved) {
+            // Если ничего не двинулось, откатывать state не нужно здесь — previousGrid содержит предыдущее состояние
+            return;
+        }
+        addRandomTile();
+        renderGrid();
+        // Проверяем конец игры
+        if (!canMove()) {
+            // показываем модалку через небольшой timeout, чтобы UI успел обновиться
+            setTimeout(() => {
+                // показываем модалку конца игры
+                gameOverModal.classList.remove("hidden");
+            }, 50);
+        }
+    }
+
+    // Проверяет, есть ли возможные ходы
     function canMove() {
+        // Пустая клетка
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
                 if (grid[r][c] === 0) return true;
+
+        // Горизонтальные слияния
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE - 1; c++)
                 if (grid[r][c] === grid[r][c + 1]) return true;
+
+        // Вертикальные слияния
         for (let c = 0; c < GRID_SIZE; c++)
             for (let r = 0; r < GRID_SIZE - 1; r++)
                 if (grid[r][c] === grid[r + 1][c]) return true;
+
         return false;
     }
-
-    function checkGameOver() {
-        if (!canMove()) gameOverModal.classList.remove("hidden");
-    }
-
-    function hasMoves() {
-    // Если есть пустая клетка — ходы есть
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            if (grid[r][c] === 0) return true;
-        }
-    }
-
-    // Если можно слить соседние плитки — ходы есть
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            if (c < GRID_SIZE - 1 && grid[r][c] === grid[r][c+1]) return true;
-            if (r < GRID_SIZE - 1 && grid[r][c] === grid[r+1][c]) return true;
-        }
-    }
-
-    // Ходов нет
-    return false;
-}
 
     // Лидерборд
     function renderLeadersList() {
@@ -190,6 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
         score = 0;
         initGrid();
         addStartTiles();
+        // Сброс undo
+        previousGrid = null;
+        previousScore = 0;
         renderGrid();
         usernameInput.value = "";
         usernameInput.style.display = "block";
@@ -201,6 +226,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Клавиши
     document.addEventListener("keydown", (e) => {
+        if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)) {
+            e.preventDefault();
+        }
         if (e.key === "ArrowLeft") move("left");
         if (e.key === "ArrowRight") move("right");
         if (e.key === "ArrowUp") move("up");
@@ -212,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gridContainer.addEventListener("touchstart", e => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
-    });
+    }, {passive: true});
     gridContainer.addEventListener("touchend", e => {
         let dx = e.changedTouches[0].clientX - startX;
         let dy = e.changedTouches[0].clientY - startY;
@@ -225,4 +253,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
