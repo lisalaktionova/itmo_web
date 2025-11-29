@@ -168,7 +168,6 @@ function renderLeadersList(){
     });
 }
 
-});
 // --- Кнопка лидеров ---
 leadersBtn.onclick = ()=>{
     renderLeadersList();
@@ -231,4 +230,5 @@ document.addEventListener("keydown",(e)=>{
     if(e.key==="ArrowRight") move("right");
     if(e.key==="ArrowUp") move("up");
     if(e.key==="ArrowDown") move("down");
+});
 });
