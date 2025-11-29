@@ -5,10 +5,9 @@ let previousGrid = null;
 let previousScore = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // --- Элементы DOM ---
     const scoreSpan = document.getElementById("score");
     const gridContainer = document.getElementById("grid");
+
     const undoBtn = document.getElementById("undo-btn");
     const restartBtn = document.getElementById("restart-btn");
     const leadersBtn = document.getElementById("leaders-btn");
@@ -19,6 +18,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.getElementById("close-modal-btn");
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
     const leaderboardTable = document.getElementById("leaderboard-table");
+
+    // --- Создаем кнопки управления для мобильных ---
+    const controlsDiv = document.getElementById("controls");
+    const mobileControls = document.createElement("div");
+    mobileControls.id = "mobile-controls";
+    mobileControls.style.marginTop = "15px";
+    mobileControls.innerHTML = `
+        <button data-dir="up">↑</button>
+        <button data-dir="left">←</button>
+        <button data-dir="down">↓</button>
+        <button data-dir="right">→</button>
+    `;
+    controlsDiv.appendChild(mobileControls);
+
+    mobileControls.querySelectorAll("button").forEach(btn => {
+        btn.onclick = () => move(btn.dataset.dir);
+    });
 
     // --- Инициализация пустого поля ---
     function initGrid() {
@@ -63,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         previousScore = score;
     }
 
+    // --- Undo ---
     undoBtn.onclick = () => {
         if (previousGrid) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -89,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr;
     }
 
+    // --- Поворот матрицы ---
     function rotateGrid(times) {
         for (let t = 0; t < times; t++) {
             let newGrid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -99,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // --- Универсальное движение ---
     function move(direction) {
         saveState();
         if (direction === "left") {
@@ -124,6 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         checkGameOver();
     }
 
+    // --- Проверка доступных ходов ---
     function canMove() {
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
@@ -137,18 +157,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
+    // --- Конец игры ---
     function checkGameOver() {
         if (!canMove()) {
             gameOverModal.classList.remove("hidden");
         }
     }
 
+    // --- Таблица лидеров ---
     function renderLeadersList() {
         leaderboardTable.innerHTML = "";
         const header = document.createElement("tr");
         header.innerHTML = "<th>Имя</th><th>Очки</th><th>Дата</th>";
         leaderboardTable.appendChild(header);
-
         const leaders = JSON.parse(localStorage.getItem("leaders") || "[]");
         if (!leaders.length) {
             const row = document.createElement("tr");
@@ -156,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
             leaderboardTable.appendChild(row);
             return;
         }
-
         leaders.forEach(l => {
             const row = document.createElement("tr");
             row.innerHTML = `<td>${l.name}</td><td>${l.score}</td><td>${new Date(l.date).toLocaleString()}</td>`;
@@ -164,33 +184,35 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- Кнопка лидеров ---
     leadersBtn.onclick = () => {
         renderLeadersList();
         leaderboardModal.classList.remove("hidden");
-        gameOverModal.classList.add("hidden");
     };
 
+    // --- Закрытие модалок ---
     closeModalBtn.onclick = () => gameOverModal.classList.add("hidden");
     closeLeadersBtn.onclick = () => leaderboardModal.classList.add("hidden");
 
+    // --- Кнопка рестарта ---
+    restartBtn.onclick = startGame;
+
+    // --- Сохранение результата ---
     saveScoreBtn.onclick = () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("leaders") || "[]");
         leaders.push({ name, score, date: new Date().toISOString() });
         leaders.sort((a, b) => b.score - a.score);
         localStorage.setItem("leaders", JSON.stringify(leaders.slice(0, 10)));
-
         document.getElementById("game-over-text").textContent = "Ваш рекорд сохранен!";
         usernameInput.style.display = "none";
         saveScoreBtn.style.display = "none";
-
         renderLeadersList();
         leaderboardModal.classList.remove("hidden");
         gameOverModal.classList.add("hidden");
     };
 
-    restartBtn.onclick = startGame;
-
+    // --- Старт игры ---
     function startGame() {
         score = 0;
         initGrid();
@@ -204,11 +226,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startGame();
 
-    document.addEventListener("keydown", e => {
+    // --- Управление стрелками ---
+    document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") move("left");
         if (e.key === "ArrowRight") move("right");
         if (e.key === "ArrowUp") move("up");
         if (e.key === "ArrowDown") move("down");
+    });
+
+    // --- Свайпы на мобильных устройствах ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+    gridContainer.addEventListener("touchstart", e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    });
+    gridContainer.addEventListener("touchend", e => {
+        let dx = e.changedTouches[0].clientX - touchStartX;
+        let dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 20) move("right");
+            else if (dx < -20) move("left");
+        } else {
+            if (dy > 20) move("down");
+            else if (dy < -20) move("up");
+        }
     });
 });
 
