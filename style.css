@@ -11,15 +11,15 @@ h1 {
 }
 
 #game-container {
-    width: 300px;
+    width: 320px;
     margin: 20px auto;
 }
 
 #grid {
     display: grid;
     grid-template-columns: repeat(4, 70px);
-    grid-gap: 10px;
-    padding: 10px;
+    grid-gap: 5px;
+    padding: 5px;
     background: #bbada0;
     border-radius: 6px;
 }
