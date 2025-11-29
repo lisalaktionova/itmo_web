@@ -17,16 +17,14 @@ h1 {
 
 #grid {
     display: grid;
-    grid-template-columns: repeat(4, 70px);
-    grid-gap: 5px;
-    padding: 5px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
     background: #bbada0;
     border-radius: 6px;
 }
-
 .tile {
-    width: 70px;
-    height: 70px;
+    aspect-ratio: 1 / 1;
     display: flex;
     justify-content: center;
     align-items: center;
