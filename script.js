@@ -5,6 +5,7 @@ let previousGrid = null;
 let previousScore = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Элементы
     const scoreSpan = document.getElementById("score");
     const gridContainer = document.getElementById("grid");
     const undoBtn = document.getElementById("undo-btn");
@@ -18,10 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
     const leaderboardTable = document.getElementById("leaderboard-table");
 
+    // Инициализация сетки
     function initGrid() {
         grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
     }
 
+    // Рендер сетки
     function renderGrid() {
         gridContainer.innerHTML = "";
         for (let r = 0; r < GRID_SIZE; r++) {
@@ -36,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scoreSpan.textContent = score;
     }
 
+    // Добавление случайной плитки
     function addRandomTile() {
         const empty = [];
         for (let r = 0; r < GRID_SIZE; r++)
@@ -47,15 +51,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addStartTiles() {
-        const count = Math.floor(Math.random() * 3) + 1;
+        const count = 2; // стандартно 2 плитки
         for (let i = 0; i < count; i++) addRandomTile();
     }
 
+    // Сохранение состояния для undo
     function saveState() {
         previousGrid = JSON.parse(JSON.stringify(grid));
         previousScore = score;
     }
 
+    // Undo
     undoBtn.onclick = () => {
         if (previousGrid) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -64,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // Логика движения плиток
     function moveRowLeft(row) {
         let arr = row.filter(v => v !== 0);
         let scoreAdd = 0;
@@ -119,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!canMove()) gameOverModal.classList.remove("hidden");
     }
 
+    // Лидерборд
     function renderLeadersList() {
         leaderboardTable.innerHTML = "";
         const header = document.createElement("tr");
@@ -157,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gameOverModal.classList.add("hidden");
     };
 
+    // Старт игры
     function startGame() {
         score = 0;
         initGrid();
@@ -170,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startGame();
 
+    // Клавиши
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") move("left");
         if (e.key === "ArrowRight") move("right");
@@ -177,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "ArrowDown") move("down");
     });
 
-    // Свайпы для мобильных
+    // Свайпы
     let startX = 0, startY = 0;
     gridContainer.addEventListener("touchstart", e => {
         startX = e.touches[0].clientX;
@@ -195,3 +205,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
