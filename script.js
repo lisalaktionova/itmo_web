@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const leftBtn = document.getElementById("left-btn");
     const rightBtn = document.getElementById("right-btn");
 
+    // Инициализация игры
     loadGameState();
     setupMobileControls();
 
@@ -34,10 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderGrid() {
+        // Очищаем контейнер
         while (gridContainer.firstChild) {
             gridContainer.removeChild(gridContainer.firstChild);
         }
         
+        // Создаем плитки
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 const tile = document.createElement("div");
@@ -47,10 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 const value = grid[r][c];
                 if (value !== 0) {
-                    const textNode = document.createTextNode(value);
+                    // Убеждаемся, что значение - число
+                    const textNode = document.createTextNode(String(value));
                     tile.appendChild(textNode);
                     tile.classList.add(`tile-${value}`);
                     
+                    // Анимации
                     const isNew = movedTiles.some(t => t.r === r && t.c === c && t.isNew);
                     if (isNew) {
                         tile.classList.add('tile-new');
@@ -67,9 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        const scoreText = document.createTextNode(score);
-        scoreSpan.innerHTML = '';
-        scoreSpan.appendChild(scoreText);
+        // Обновляем счет (убеждаемся, что score - число)
+        scoreSpan.textContent = String(score);
         
         saveGameState();
     }
@@ -92,14 +96,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addStartTiles() {
+        // Добавляем 2 начальные плитки
         addRandomTile();
         addRandomTile();
         movedTiles = [];
     }
 
     function saveState() {
-        previousGrid = JSON.parse(JSON.stringify(grid));
-        previousScore = score;
+        if (!gameOver) {
+            previousGrid = JSON.parse(JSON.stringify(grid));
+            previousScore = score;
+        }
     }
 
     undoBtn.addEventListener('click', () => {
@@ -113,17 +120,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function moveRowLeft(row, rowIndex) {
+        // Сохраняем исходные позиции
         const originalPositions = row.map((val, colIndex) => ({ 
             value: val, 
             from: colIndex 
         }));
 
+        // Убираем нули
         let arr = row.filter(val => val !== 0);
         let newRow = [];
         let scoreAdd = 0;
         let i = 0;
         let merged = [];
 
+        // Обрабатываем слияния
         while (i < arr.length) {
             if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
                 const mergedValue = arr[i] * 2;
@@ -137,12 +147,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        // Заполняем нулями
         while (newRow.length < GRID_SIZE) {
             newRow.push(0);
         }
 
+        // Собираем информацию для анимации
         const movements = [];
-        let newCol = 0;
         
         for (let oldCol = 0; oldCol < originalPositions.length; oldCol++) {
             const original = originalPositions[oldCol];
@@ -175,7 +186,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        return { row: newRow.filter(val => val !== null), score: scoreAdd, movements };
+        return { 
+            row: newRow.filter(val => val !== null), 
+            score: scoreAdd, 
+            movements 
+        };
     }
 
     function rotateGrid(times) {
@@ -265,18 +280,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function canMove() {
+        // Проверяем пустые клетки
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 if (grid[r][c] === 0) return true;
             }
         }
 
+        // Проверяем возможные слияния по горизонтали
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE - 1; c++) {
                 if (grid[r][c] === grid[r][c + 1]) return true;
             }
         }
 
+        // Проверяем возможные слияния по вертикали
         for (let c = 0; c < GRID_SIZE; c++) {
             for (let r = 0; r < GRID_SIZE - 1; r++) {
                 if (grid[r][c] === grid[r + 1][c]) return true;
@@ -319,14 +337,20 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadGameState() {
         const savedState = localStorage.getItem('2048_gameState');
         if (savedState) {
-            const state = JSON.parse(savedState);
-            grid = state.grid || [];
-            score = state.score || 0;
-            previousGrid = state.previousGrid;
-            previousScore = state.previousScore;
-            gameOver = state.gameOver || false;
-            
-            if (grid.length === 0) {
+            try {
+                const state = JSON.parse(savedState);
+                grid = state.grid || [];
+                score = Number(state.score) || 0; // Убеждаемся, что score - число
+                previousGrid = state.previousGrid;
+                previousScore = Number(state.previousScore) || 0;
+                gameOver = state.gameOver || false;
+                
+                if (grid.length === 0 || !Array.isArray(grid[0])) {
+                    initGrid();
+                    addStartTiles();
+                }
+            } catch (e) {
+                console.error('Error loading game state:', e);
                 initGrid();
                 addStartTiles();
             }
@@ -365,18 +389,23 @@ document.addEventListener("DOMContentLoaded", () => {
     saveScoreBtn.addEventListener('click', () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
+        
+        // Убеждаемся, что score - число
+        const numericScore = Number(score) || 0;
+        
         leaders.push({ 
             name, 
-            score, 
+            score: numericScore, 
             date: new Date().toISOString() 
         });
-        leaders.sort((a, b) => b.score - a.score);
+        
+        // Сортируем и сохраняем топ-10
+        leaders.sort((a, b) => Number(b.score) - Number(a.score));
         localStorage.setItem("2048_leaders", JSON.stringify(leaders.slice(0, 10)));
         
+        // Обновляем текст
         const gameOverText = document.getElementById("game-over-text");
-        const textNode = document.createTextNode("Ваш рекорд сохранен!");
-        gameOverText.innerHTML = '';
-        gameOverText.appendChild(textNode);
+        gameOverText.textContent = "Ваш рекорд сохранен!";
         
         usernameInput.style.display = "none";
         saveScoreBtn.style.display = "none";
@@ -389,37 +418,40 @@ document.addEventListener("DOMContentLoaded", () => {
     restartBtn.addEventListener('click', () => startGame());
 
     function renderLeadersList() {
+        // Очищаем таблицу
         while (leaderboardTable.firstChild) {
             leaderboardTable.removeChild(leaderboardTable.firstChild);
         }
         
+        // Создаем заголовок
         const headerRow = document.createElement("tr");
         
         const placeHeader = document.createElement("th");
-        placeHeader.appendChild(document.createTextNode("Место"));
+        placeHeader.textContent = "Место";
         headerRow.appendChild(placeHeader);
         
         const nameHeader = document.createElement("th");
-        nameHeader.appendChild(document.createTextNode("Имя"));
+        nameHeader.textContent = "Имя";
         headerRow.appendChild(nameHeader);
         
         const scoreHeader = document.createElement("th");
-        scoreHeader.appendChild(document.createTextNode("Очки"));
+        scoreHeader.textContent = "Очки";
         headerRow.appendChild(scoreHeader);
         
         const dateHeader = document.createElement("th");
-        dateHeader.appendChild(document.createTextNode("Дата"));
+        dateHeader.textContent = "Дата";
         headerRow.appendChild(dateHeader);
         
         leaderboardTable.appendChild(headerRow);
         
+        // Загружаем и отображаем лидеров
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         
         if (leaders.length === 0) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
             cell.colSpan = 4;
-            cell.appendChild(document.createTextNode("Пока нет рекордов"));
+            cell.textContent = "Пока нет рекордов";
             row.appendChild(cell);
             leaderboardTable.appendChild(row);
             return;
@@ -429,19 +461,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.createElement("tr");
             
             const placeCell = document.createElement("td");
-            placeCell.appendChild(document.createTextNode(index + 1));
+            placeCell.textContent = index + 1;
             row.appendChild(placeCell);
             
             const nameCell = document.createElement("td");
-            nameCell.appendChild(document.createTextNode(leader.name));
+            nameCell.textContent = leader.name;
             row.appendChild(nameCell);
             
             const scoreCell = document.createElement("td");
-            scoreCell.appendChild(document.createTextNode(leader.score));
+            scoreCell.textContent = Number(leader.score) || 0; // Убеждаемся, что число
             row.appendChild(scoreCell);
             
             const dateCell = document.createElement("td");
-            dateCell.appendChild(document.createTextNode(new Date(leader.date).toLocaleDateString('ru-RU')));
+            dateCell.textContent = new Date(leader.date).toLocaleDateString('ru-RU');
             row.appendChild(dateCell);
             
             leaderboardTable.appendChild(row);
@@ -449,6 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startGame() {
+        // Сбрасываем все значения
         score = 0;
         gameOver = false;
         initGrid();
@@ -456,23 +489,22 @@ document.addEventListener("DOMContentLoaded", () => {
         previousGrid = null;
         previousScore = 0;
         movedTiles = [];
-        renderGrid();
         
+        // Сбрасываем UI
         usernameInput.value = "";
         usernameInput.style.display = "block";
         saveScoreBtn.style.display = "block";
         
         const gameOverText = document.getElementById("game-over-text");
-        const textNode = document.createTextNode("Игра окончена!");
-        gameOverText.innerHTML = '';
-        gameOverText.appendChild(textNode);
+        gameOverText.textContent = "Игра окончена!";
         
         gameOverModal.classList.add("hidden");
         leaderboardModal.classList.add("hidden");
         
-        saveGameState();
+        renderGrid();
     }
 
+    // Обработчики клавиатуры
     document.addEventListener("keydown", e => {
         if (gameOver) return;
         
@@ -485,6 +517,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Свайпы для мобильных
     let startX = 0, startY = 0;
     
     gridContainer.addEventListener("touchstart", e => {
@@ -511,5 +544,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Запускаем игру
     startGame();
 });
