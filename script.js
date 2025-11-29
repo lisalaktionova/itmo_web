@@ -26,12 +26,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const leftBtn = document.getElementById("left-btn");
     const rightBtn = document.getElementById("right-btn");
 
-    // Инициализация игры
-    loadGameState();
-    setupMobileControls();
+    // Инициализация
+    initGame();
+
+    function initGame() {
+        // Полная инициализация с проверками
+        score = 0;
+        previousScore = 0;
+        gameOver = false;
+        previousGrid = null;
+        movedTiles = [];
+        
+        initGrid();
+        addStartTiles();
+        renderGrid();
+        
+        // Сбрасываем UI
+        usernameInput.value = "";
+        usernameInput.style.display = "block";
+        saveScoreBtn.style.display = "block";
+        gameOverModal.classList.add("hidden");
+        leaderboardModal.classList.add("hidden");
+        
+        const gameOverText = document.getElementById("game-over-text");
+        gameOverText.textContent = "Игра окончена!";
+    }
 
     function initGrid() {
-        grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+        grid = [];
+        for (let i = 0; i < GRID_SIZE; i++) {
+            grid.push(Array(GRID_SIZE).fill(0));
+        }
     }
 
     function renderGrid() {
@@ -45,14 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
             for (let c = 0; c < GRID_SIZE; c++) {
                 const tile = document.createElement("div");
                 tile.className = "tile";
-                tile.dataset.row = r;
-                tile.dataset.col = c;
                 
                 const value = grid[r][c];
                 if (value !== 0) {
-                    // Убеждаемся, что значение - число
-                    const textNode = document.createTextNode(String(value));
-                    tile.appendChild(textNode);
+                    tile.textContent = value.toString();
                     tile.classList.add(`tile-${value}`);
                     
                     // Анимации
@@ -72,8 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        // Обновляем счет (убеждаемся, что score - число)
-        scoreSpan.textContent = String(score);
+        // Обновляем счет (гарантируем, что это число)
+        scoreSpan.textContent = Math.floor(score).toString();
         
         saveGameState();
     }
@@ -119,27 +140,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    function moveRowLeft(row, rowIndex) {
-        // Сохраняем исходные позиции
-        const originalPositions = row.map((val, colIndex) => ({ 
-            value: val, 
-            from: colIndex 
-        }));
-
-        // Убираем нули
+    function moveRowLeft(row) {
+        // Фильтруем нули
         let arr = row.filter(val => val !== 0);
         let newRow = [];
         let scoreAdd = 0;
         let i = 0;
-        let merged = [];
 
-        // Обрабатываем слияния
         while (i < arr.length) {
             if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
+                // Слияние
                 const mergedValue = arr[i] * 2;
                 newRow.push(mergedValue);
                 scoreAdd += mergedValue;
-                merged.push({ from: i, to: newRow.length - 1, value: mergedValue });
                 i += 2;
             } else {
                 newRow.push(arr[i]);
@@ -152,45 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
             newRow.push(0);
         }
 
-        // Собираем информацию для анимации
-        const movements = [];
-        
-        for (let oldCol = 0; oldCol < originalPositions.length; oldCol++) {
-            const original = originalPositions[oldCol];
-            if (original.value !== 0) {
-                let found = false;
-                for (let j = 0; j < newRow.length; j++) {
-                    if (newRow[j] === original.value && !movements.some(m => m.to === j)) {
-                        movements.push({
-                            from: { r: rowIndex, c: oldCol },
-                            to: { r: rowIndex, c: j },
-                            value: newRow[j],
-                            merged: merged.some(m => m.to === j)
-                        });
-                        newRow[j] = null;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    const merge = merged.find(m => m.value === original.value * 2);
-                    if (merge) {
-                        movements.push({
-                            from: { r: rowIndex, c: oldCol },
-                            to: { r: rowIndex, c: merge.to },
-                            value: merge.value,
-                            merged: true
-                        });
-                    }
-                }
-            }
-        }
-
-        return { 
-            row: newRow.filter(val => val !== null), 
-            score: scoreAdd, 
-            movements 
-        };
+        return { row: newRow, score: scoreAdd };
     }
 
     function rotateGrid(times) {
@@ -213,70 +188,59 @@ document.addEventListener("DOMContentLoaded", () => {
         const before = JSON.parse(JSON.stringify(grid));
         const beforeScore = score;
         movedTiles = [];
+        let moved = false;
 
         if (direction === "left") {
-            let allMovements = [];
             for (let r = 0; r < GRID_SIZE; r++) {
-                const result = moveRowLeft(grid[r], r);
+                const result = moveRowLeft(grid[r]);
+                if (!gridsEqual(grid[r], result.row)) {
+                    moved = true;
+                }
                 grid[r] = result.row;
                 score += result.score;
-                allMovements = allMovements.concat(result.movements);
             }
-            movedTiles = allMovements;
         } else if (direction === "right") {
             rotateGrid(2);
-            let allMovements = [];
             for (let r = 0; r < GRID_SIZE; r++) {
-                const result = moveRowLeft(grid[r], r);
+                const result = moveRowLeft(grid[r]);
+                if (!gridsEqual(grid[r], result.row)) {
+                    moved = true;
+                }
                 grid[r] = result.row;
                 score += result.score;
-                const correctedMovements = result.movements.map(m => ({
-                    from: { r: m.from.r, c: GRID_SIZE - 1 - m.from.c },
-                    to: { r: m.to.r, c: GRID_SIZE - 1 - m.to.c },
-                    value: m.value,
-                    merged: m.merged
-                }));
-                allMovements = allMovements.concat(correctedMovements);
             }
             rotateGrid(2);
-            movedTiles = allMovements;
         } else if (direction === "up") {
             rotateGrid(3);
-            let allMovements = [];
             for (let r = 0; r < GRID_SIZE; r++) {
-                const result = moveRowLeft(grid[r], r);
+                const result = moveRowLeft(grid[r]);
+                if (!gridsEqual(grid[r], result.row)) {
+                    moved = true;
+                }
                 grid[r] = result.row;
                 score += result.score;
-                const correctedMovements = result.movements.map(m => ({
-                    from: { r: m.from.c, c: GRID_SIZE - 1 - m.from.r },
-                    to: { r: m.to.c, c: GRID_SIZE - 1 - m.to.r },
-                    value: m.value,
-                    merged: m.merged
-                }));
-                allMovements = allMovements.concat(correctedMovements);
             }
             rotateGrid(1);
-            movedTiles = allMovements;
         } else if (direction === "down") {
             rotateGrid(1);
-            let allMovements = [];
             for (let r = 0; r < GRID_SIZE; r++) {
-                const result = moveRowLeft(grid[r], r);
+                const result = moveRowLeft(grid[r]);
+                if (!gridsEqual(grid[r], result.row)) {
+                    moved = true;
+                }
                 grid[r] = result.row;
                 score += result.score;
-                const correctedMovements = result.movements.map(m => ({
-                    from: { r: GRID_SIZE - 1 - m.from.c, c: m.from.r },
-                    to: { r: GRID_SIZE - 1 - m.to.c, c: m.to.r },
-                    value: m.value,
-                    merged: m.merged
-                }));
-                allMovements = allMovements.concat(correctedMovements);
             }
             rotateGrid(3);
-            movedTiles = allMovements;
         }
 
-        return !gridsEqual(before, grid) || score !== beforeScore;
+        // Гарантируем, что счет - валидное число
+        score = Math.floor(score);
+        if (isNaN(score)) {
+            score = 0;
+        }
+
+        return moved || score !== beforeScore;
     }
 
     function canMove() {
@@ -287,14 +251,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Проверяем возможные слияния по горизонтали
+        // Проверяем возможные слияния
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE - 1; c++) {
                 if (grid[r][c] === grid[r][c + 1]) return true;
             }
         }
 
-        // Проверяем возможные слияния по вертикали
         for (let c = 0; c < GRID_SIZE; c++) {
             for (let r = 0; r < GRID_SIZE - 1; r++) {
                 if (grid[r][c] === grid[r + 1][c]) return true;
@@ -340,23 +303,28 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const state = JSON.parse(savedState);
                 grid = state.grid || [];
-                score = Number(state.score) || 0; // Убеждаемся, что score - число
+                score = parseInt(state.score) || 0;
                 previousGrid = state.previousGrid;
-                previousScore = Number(state.previousScore) || 0;
+                previousScore = parseInt(state.previousScore) || 0;
                 gameOver = state.gameOver || false;
                 
-                if (grid.length === 0 || !Array.isArray(grid[0])) {
-                    initGrid();
-                    addStartTiles();
+                // Валидация данных
+                if (!Array.isArray(grid) || grid.length !== GRID_SIZE) {
+                    throw new Error('Invalid grid data');
                 }
+                
+                if (isNaN(score)) {
+                    score = 0;
+                }
+                
             } catch (e) {
-                console.error('Error loading game state:', e);
-                initGrid();
-                addStartTiles();
+                console.log('Invalid saved state, starting new game');
+                initGame();
+                return;
             }
         } else {
-            initGrid();
-            addStartTiles();
+            initGame();
+            return;
         }
         renderGrid();
     }
@@ -390,8 +358,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         
-        // Убеждаемся, что score - число
-        const numericScore = Number(score) || 0;
+        // Гарантируем, что счет - число
+        const numericScore = parseInt(score) || 0;
         
         leaders.push({ 
             name, 
@@ -399,11 +367,9 @@ document.addEventListener("DOMContentLoaded", () => {
             date: new Date().toISOString() 
         });
         
-        // Сортируем и сохраняем топ-10
-        leaders.sort((a, b) => Number(b.score) - Number(a.score));
+        leaders.sort((a, b) => (parseInt(b.score) || 0) - (parseInt(a.score) || 0));
         localStorage.setItem("2048_leaders", JSON.stringify(leaders.slice(0, 10)));
         
-        // Обновляем текст
         const gameOverText = document.getElementById("game-over-text");
         gameOverText.textContent = "Ваш рекорд сохранен!";
         
@@ -412,18 +378,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     resumeBtn.addEventListener('click', () => {
-        startGame();
+        initGame();
     });
 
-    restartBtn.addEventListener('click', () => startGame());
+    restartBtn.addEventListener('click', () => initGame());
 
     function renderLeadersList() {
-        // Очищаем таблицу
         while (leaderboardTable.firstChild) {
             leaderboardTable.removeChild(leaderboardTable.firstChild);
         }
         
-        // Создаем заголовок
         const headerRow = document.createElement("tr");
         
         const placeHeader = document.createElement("th");
@@ -444,7 +408,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         leaderboardTable.appendChild(headerRow);
         
-        // Загружаем и отображаем лидеров
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         
         if (leaders.length === 0) {
@@ -461,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.createElement("tr");
             
             const placeCell = document.createElement("td");
-            placeCell.textContent = index + 1;
+            placeCell.textContent = (index + 1).toString();
             row.appendChild(placeCell);
             
             const nameCell = document.createElement("td");
@@ -469,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.appendChild(nameCell);
             
             const scoreCell = document.createElement("td");
-            scoreCell.textContent = Number(leader.score) || 0; // Убеждаемся, что число
+            scoreCell.textContent = (parseInt(leader.score) || 0).toString();
             row.appendChild(scoreCell);
             
             const dateCell = document.createElement("td");
@@ -478,30 +441,6 @@ document.addEventListener("DOMContentLoaded", () => {
             
             leaderboardTable.appendChild(row);
         });
-    }
-
-    function startGame() {
-        // Сбрасываем все значения
-        score = 0;
-        gameOver = false;
-        initGrid();
-        addStartTiles();
-        previousGrid = null;
-        previousScore = 0;
-        movedTiles = [];
-        
-        // Сбрасываем UI
-        usernameInput.value = "";
-        usernameInput.style.display = "block";
-        saveScoreBtn.style.display = "block";
-        
-        const gameOverText = document.getElementById("game-over-text");
-        gameOverText.textContent = "Игра окончена!";
-        
-        gameOverModal.classList.add("hidden");
-        leaderboardModal.classList.add("hidden");
-        
-        renderGrid();
     }
 
     // Обработчики клавиатуры
@@ -517,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Свайпы для мобильных
+    // Свайпы
     let startX = 0, startY = 0;
     
     gridContainer.addEventListener("touchstart", e => {
@@ -544,6 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Запускаем игру
-    startGame();
+    // Загружаем сохраненную игру или начинаем новую
+    loadGameState();
+    setupMobileControls();
 });
