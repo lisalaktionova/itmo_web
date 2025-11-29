@@ -4,7 +4,7 @@ let score = 0;
 let previousGrid = null;
 let previousScore = 0;
 let gameOver = false;
-let movedTiles = []; // Для анимации
+let movedTiles = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     const scoreSpan = document.getElementById("score");
@@ -21,13 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
     const mobileControls = document.getElementById("mobile-controls");
 
-    // Виртуальные кнопки для мобильных
     const upBtn = document.getElementById("up-btn");
     const downBtn = document.getElementById("down-btn");
     const leftBtn = document.getElementById("left-btn");
     const rightBtn = document.getElementById("right-btn");
 
-    // Инициализация
     loadGameState();
     setupMobileControls();
 
@@ -36,7 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderGrid() {
-        gridContainer.innerHTML = "";
+        while (gridContainer.firstChild) {
+            gridContainer.removeChild(gridContainer.firstChild);
+        }
+        
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 const tile = document.createElement("div");
@@ -46,17 +47,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 const value = grid[r][c];
                 if (value !== 0) {
-                    tile.textContent = value;
+                    const textNode = document.createTextNode(value);
+                    tile.appendChild(textNode);
                     tile.classList.add(`tile-${value}`);
                     
-                    // Анимация появления новых плиток
                     const isNew = movedTiles.some(t => t.r === r && t.c === c && t.isNew);
                     if (isNew) {
                         tile.classList.add('tile-new');
                         setTimeout(() => tile.classList.remove('tile-new'), 300);
                     }
                     
-                    // Анимация слияния
                     const isMerged = movedTiles.some(t => t.r === r && t.c === c && t.merged);
                     if (isMerged) {
                         tile.classList.add('tile-merged');
@@ -66,9 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 gridContainer.appendChild(tile);
             }
         }
-        scoreSpan.textContent = score;
         
-        // Сохраняем состояние после рендера
+        const scoreText = document.createTextNode(score);
+        scoreSpan.innerHTML = '';
+        scoreSpan.appendChild(scoreText);
+        
         saveGameState();
     }
 
@@ -84,17 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const { r, c } = empty[Math.floor(Math.random() * empty.length)];
         grid[r][c] = Math.random() < 0.9 ? 2 : 4;
         
-        // Добавляем информацию для анимации
         movedTiles.push({ r, c, value: grid[r][c], isNew: true });
         
         return true;
     }
 
     function addStartTiles() {
-        // Добавляем 2 начальные плитки
         addRandomTile();
         addRandomTile();
-        movedTiles = []; // Сбрасываем после начальной генерации
+        movedTiles = [];
     }
 
     function saveState() {
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         previousScore = score;
     }
 
-    undoBtn.onclick = () => {
+    undoBtn.addEventListener('click', () => {
         if (previousGrid && !gameOver) {
             grid = JSON.parse(JSON.stringify(previousGrid));
             score = previousScore;
@@ -110,16 +110,14 @@ document.addEventListener("DOMContentLoaded", () => {
             gameOverModal.classList.add("hidden");
             renderGrid();
         }
-    };
+    });
 
     function moveRowLeft(row, rowIndex) {
-        // Сохраняем исходные позиции для анимации
         const originalPositions = row.map((val, colIndex) => ({ 
             value: val, 
             from: colIndex 
         }));
 
-        // Фильтруем нули
         let arr = row.filter(val => val !== 0);
         let newRow = [];
         let scoreAdd = 0;
@@ -128,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         while (i < arr.length) {
             if (i < arr.length - 1 && arr[i] === arr[i + 1]) {
-                // Слияние одинаковых плиток
                 const mergedValue = arr[i] * 2;
                 newRow.push(mergedValue);
                 scoreAdd += mergedValue;
@@ -140,19 +137,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Заполняем оставшиеся позиции нулями
         while (newRow.length < GRID_SIZE) {
             newRow.push(0);
         }
 
-        // Собираем информацию о перемещениях для анимации
         const movements = [];
         let newCol = 0;
         
         for (let oldCol = 0; oldCol < originalPositions.length; oldCol++) {
             const original = originalPositions[oldCol];
             if (original.value !== 0) {
-                // Ищем новую позицию этой плитки
                 let found = false;
                 for (let j = 0; j < newRow.length; j++) {
                     if (newRow[j] === original.value && !movements.some(m => m.to === j)) {
@@ -162,12 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             value: newRow[j],
                             merged: merged.some(m => m.to === j)
                         });
-                        newRow[j] = null; // Помечаем как обработанную
+                        newRow[j] = null;
                         found = true;
                         break;
                     }
                 }
-                // Если не нашли - значит плитка была объединена
                 if (!found) {
                     const merge = merged.find(m => m.value === original.value * 2);
                     if (merge) {
@@ -222,7 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = moveRowLeft(grid[r], r);
                 grid[r] = result.row;
                 score += result.score;
-                // Корректируем координаты для анимации
                 const correctedMovements = result.movements.map(m => ({
                     from: { r: m.from.r, c: GRID_SIZE - 1 - m.from.c },
                     to: { r: m.to.r, c: GRID_SIZE - 1 - m.to.c },
@@ -240,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = moveRowLeft(grid[r], r);
                 grid[r] = result.row;
                 score += result.score;
-                // Корректируем координаты для анимации
                 const correctedMovements = result.movements.map(m => ({
                     from: { r: m.from.c, c: GRID_SIZE - 1 - m.from.r },
                     to: { r: m.to.c, c: GRID_SIZE - 1 - m.to.r },
@@ -258,7 +249,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = moveRowLeft(grid[r], r);
                 grid[r] = result.row;
                 score += result.score;
-                // Корректируем координаты для анимации
                 const correctedMovements = result.movements.map(m => ({
                     from: { r: GRID_SIZE - 1 - m.from.c, c: m.from.r },
                     to: { r: GRID_SIZE - 1 - m.to.c, c: m.to.r },
@@ -275,21 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function canMove() {
-        // Проверяем есть ли пустые клетки
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 if (grid[r][c] === 0) return true;
             }
         }
 
-        // Проверяем возможные слияния по горизонтали
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE - 1; c++) {
                 if (grid[r][c] === grid[r][c + 1]) return true;
             }
         }
 
-        // Проверяем возможные слияния по вертикали
         for (let c = 0; c < GRID_SIZE; c++) {
             for (let r = 0; r < GRID_SIZE - 1; r++) {
                 if (grid[r][c] === grid[r + 1][c]) return true;
@@ -318,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Сохранение и загрузка состояния игры
     function saveGameState() {
         const gameState = {
             grid: grid,
@@ -340,7 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
             previousScore = state.previousScore;
             gameOver = state.gameOver || false;
             
-            // Если нет сохраненной игры, инициализируем новую
             if (grid.length === 0) {
                 initGrid();
                 addStartTiles();
@@ -352,36 +337,32 @@ document.addEventListener("DOMContentLoaded", () => {
         renderGrid();
     }
 
-    // Настройка мобильного управления
     function setupMobileControls() {
-        // Показываем/скрываем кнопки управления в зависимости от контекста
         const observer = new MutationObserver(() => {
-            const isGameActive = !gameOverModal.classList.contains('hidden') && 
-                               !leaderboardModal.classList.contains('hidden');
-            mobileControls.style.display = isGameActive ? 'none' : 'grid';
+            const isModalOpen = !gameOverModal.classList.contains('hidden') || 
+                              !leaderboardModal.classList.contains('hidden');
+            mobileControls.style.display = isModalOpen ? 'none' : 'grid';
         });
 
         observer.observe(gameOverModal, { attributes: true, attributeFilter: ['class'] });
         observer.observe(leaderboardModal, { attributes: true, attributeFilter: ['class'] });
 
-        // Обработчики для виртуальных кнопок
-        upBtn.onclick = () => move('up');
-        downBtn.onclick = () => move('down');
-        leftBtn.onclick = () => move('left');
-        rightBtn.onclick = () => move('right');
+        upBtn.addEventListener('click', () => move('up'));
+        downBtn.addEventListener('click', () => move('down'));
+        leftBtn.addEventListener('click', () => move('left'));
+        rightBtn.addEventListener('click', () => move('right'));
     }
 
-    // Закрытие таблицы лидеров
-    closeLeadersBtn.onclick = () => {
+    closeLeadersBtn.addEventListener('click', () => {
         leaderboardModal.classList.add("hidden");
-    };
+    });
 
-    leadersBtn.onclick = () => {
+    leadersBtn.addEventListener('click', () => {
         renderLeadersList();
         leaderboardModal.classList.remove("hidden");
-    };
+    });
 
-    saveScoreBtn.onclick = () => {
+    saveScoreBtn.addEventListener('click', () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         leaders.push({ 
@@ -389,40 +370,80 @@ document.addEventListener("DOMContentLoaded", () => {
             score, 
             date: new Date().toISOString() 
         });
-        // Сортируем по убыванию очков и оставляем топ-10
         leaders.sort((a, b) => b.score - a.score);
         localStorage.setItem("2048_leaders", JSON.stringify(leaders.slice(0, 10)));
         
-        document.getElementById("game-over-text").textContent = "Ваш рекорд сохранен!";
+        const gameOverText = document.getElementById("game-over-text");
+        const textNode = document.createTextNode("Ваш рекорд сохранен!");
+        gameOverText.innerHTML = '';
+        gameOverText.appendChild(textNode);
+        
         usernameInput.style.display = "none";
         saveScoreBtn.style.display = "none";
-    };
+    });
 
-    resumeBtn.onclick = () => {
+    resumeBtn.addEventListener('click', () => {
         startGame();
-    };
+    });
 
-    restartBtn.onclick = () => startGame();
+    restartBtn.addEventListener('click', () => startGame());
 
     function renderLeadersList() {
-        leaderboardTable.innerHTML = "<tr><th>Место</th><th>Имя</th><th>Очки</th><th>Дата</th></tr>";
+        while (leaderboardTable.firstChild) {
+            leaderboardTable.removeChild(leaderboardTable.firstChild);
+        }
+        
+        const headerRow = document.createElement("tr");
+        
+        const placeHeader = document.createElement("th");
+        placeHeader.appendChild(document.createTextNode("Место"));
+        headerRow.appendChild(placeHeader);
+        
+        const nameHeader = document.createElement("th");
+        nameHeader.appendChild(document.createTextNode("Имя"));
+        headerRow.appendChild(nameHeader);
+        
+        const scoreHeader = document.createElement("th");
+        scoreHeader.appendChild(document.createTextNode("Очки"));
+        headerRow.appendChild(scoreHeader);
+        
+        const dateHeader = document.createElement("th");
+        dateHeader.appendChild(document.createTextNode("Дата"));
+        headerRow.appendChild(dateHeader);
+        
+        leaderboardTable.appendChild(headerRow);
+        
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         
         if (leaders.length === 0) {
             const row = document.createElement("tr");
-            row.innerHTML = "<td colspan='4'>Пока нет рекордов</td>";
+            const cell = document.createElement("td");
+            cell.colSpan = 4;
+            cell.appendChild(document.createTextNode("Пока нет рекордов"));
+            row.appendChild(cell);
             leaderboardTable.appendChild(row);
             return;
         }
         
         leaders.forEach((leader, index) => {
             const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${leader.name}</td>
-                <td>${leader.score}</td>
-                <td>${new Date(leader.date).toLocaleDateString('ru-RU')}</td>
-            `;
+            
+            const placeCell = document.createElement("td");
+            placeCell.appendChild(document.createTextNode(index + 1));
+            row.appendChild(placeCell);
+            
+            const nameCell = document.createElement("td");
+            nameCell.appendChild(document.createTextNode(leader.name));
+            row.appendChild(nameCell);
+            
+            const scoreCell = document.createElement("td");
+            scoreCell.appendChild(document.createTextNode(leader.score));
+            row.appendChild(scoreCell);
+            
+            const dateCell = document.createElement("td");
+            dateCell.appendChild(document.createTextNode(new Date(leader.date).toLocaleDateString('ru-RU')));
+            row.appendChild(dateCell);
+            
             leaderboardTable.appendChild(row);
         });
     }
@@ -437,19 +458,21 @@ document.addEventListener("DOMContentLoaded", () => {
         movedTiles = [];
         renderGrid();
         
-        // Сбрасываем модальное окно
         usernameInput.value = "";
         usernameInput.style.display = "block";
         saveScoreBtn.style.display = "block";
-        document.getElementById("game-over-text").textContent = "Игра окончена!";
+        
+        const gameOverText = document.getElementById("game-over-text");
+        const textNode = document.createTextNode("Игра окончена!");
+        gameOverText.innerHTML = '';
+        gameOverText.appendChild(textNode);
+        
         gameOverModal.classList.add("hidden");
         leaderboardModal.classList.add("hidden");
         
-        // Сохраняем новое состояние
         saveGameState();
     }
 
-    // Обработчики клавиатуры
     document.addEventListener("keydown", e => {
         if (gameOver) return;
         
@@ -462,7 +485,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Свайпы для мобильных устройств
     let startX = 0, startY = 0;
     
     gridContainer.addEventListener("touchstart", e => {
@@ -481,13 +503,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const minSwipeDistance = 30;
 
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipeDistance) {
-            // Горизонтальный свайп
             if (dx > 0) move("right");
             else move("left");
         } else if (Math.abs(dy) > minSwipeDistance) {
-            // Вертикальный свайп
             if (dy > 0) move("down");
             else move("up");
         }
     });
+
+    startGame();
 });
