@@ -3,18 +3,29 @@ body {
     font-family: Arial, sans-serif;
     background: #faf8ef;
     margin: 0;
-    padding: 20px;
+    padding: 20px 0;
     display: flex;
     flex-direction: column;
-    align-items: center; /* <- центрирование по горизонтали */
+    align-items: center; /* <- центрируем по горизонтали */
     text-align: center;
+}
+
+/* Заголовок */
+h1 {
+    margin: 0 0 10px;
+}
+
+/* Счёт */
+#score-container {
+    font-size: 18px;
+    margin-bottom: 10px;
 }
 
 /* Контейнер игры */
 #game-container {
     width: 320px; /* можно подогнать под мобильные устройства */
     max-width: 90vw;
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 /* Сетка */
@@ -38,7 +49,21 @@ body {
     border-radius: 4px;
     background: #cdc1b4;
     aspect-ratio: 1 / 1;
+    user-select: none;
 }
+
+/* Цвета плиток */
+.tile-2 { background: #eee4da; color: #776e65; }
+.tile-4 { background: #ede0c8; color: #776e65; }
+.tile-8 { background: #f2b179; color: #fff; }
+.tile-16 { background: #f59563; color: #fff; }
+.tile-32 { background: #f67c5f; color: #fff; }
+.tile-64 { background: #f65e3b; color: #fff; }
+.tile-128 { background: #edcf72; color: #fff; font-size: 20px; }
+.tile-256 { background: #edcc61; color: #fff; font-size: 20px; }
+.tile-512 { background: #edc850; color: #fff; font-size: 18px; }
+.tile-1024 { background: #edc53f; color: #fff; font-size: 16px; }
+.tile-2048 { background: #edc22e; color: #fff; font-size: 16px; }
 
 /* Центрируем контролы */
 #controls {
@@ -48,3 +73,35 @@ body {
     margin-top: 10px;
     flex-wrap: wrap;
 }
+
+/* Кнопки */
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* Модалки */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.hidden { display: none; }
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    width: 300px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
