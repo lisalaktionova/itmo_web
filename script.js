@@ -1,4 +1,3 @@
-// script.js
 const GRID_SIZE = 4;
 let grid = [];
 let score = 0;
@@ -19,6 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.getElementById("close-modal-btn");
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
     const leaderboardTable = document.getElementById("leaderboard-table");
+
+    // Safety: если какие-то элементы не найдены, ничего не ломаем
+    if (!scoreSpan || !gridContainer) return;
 
     // Инициализация сетки
     function initGrid() {
@@ -53,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addStartTiles() {
-        const count = 2; // стандартно 2 плитки
+        const count = 2;
         for (let i = 0; i < count; i++) addRandomTile();
     }
 
@@ -63,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
         previousScore = score;
     }
 
-    // Undo
     undoBtn.onclick = () => {
         if (previousGrid) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -101,14 +102,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Сравнение grid'ов
     function gridsEqual(a, b) {
         return JSON.stringify(a) === JSON.stringify(b);
     }
 
-    // Выполнить ход: возвращает true если поле изменилось (т.е. ход был валидным)
     function performMove(direction) {
-        // Сохраняем текущее состояние, чтобы сравнить позже
         const before = JSON.parse(JSON.stringify(grid));
         if (direction === "left") {
             for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
@@ -128,44 +126,33 @@ document.addEventListener("DOMContentLoaded", () => {
         return !gridsEqual(before, grid);
     }
 
-    // Основная функция движения — проверяет изменение поля, добавляет плитку и рендерит
-    function move(direction) {
-        saveState(); // сохранить для undo
-        const moved = performMove(direction);
-        if (!moved) {
-            // Если ничего не двинулось, откатывать state не нужно здесь — previousGrid содержит предыдущее состояние
-            return;
-        }
-        addRandomTile();
-        renderGrid();
-        // Проверяем конец игры
-        if (!canMove()) {
-            // показываем модалку через небольшой timeout, чтобы UI успел обновиться
-            setTimeout(() => {
-                // показываем модалку конца игры
-                gameOverModal.classList.remove("hidden");
-            }, 50);
-        }
-    }
-
-    // Проверяет, есть ли возможные ходы
     function canMove() {
-        // Пустая клетка
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
                 if (grid[r][c] === 0) return true;
 
-        // Горизонтальные слияния
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE - 1; c++)
                 if (grid[r][c] === grid[r][c + 1]) return true;
 
-        // Вертикальные слияния
         for (let c = 0; c < GRID_SIZE; c++)
             for (let r = 0; r < GRID_SIZE - 1; r++)
                 if (grid[r][c] === grid[r + 1][c]) return true;
 
         return false;
+    }
+
+    function move(direction) {
+        // сохраняем состояние только если ход будет реальным — но сохраняем для undo ДО изменения, чтобы можно было откатить
+        saveState();
+        const moved = performMove(direction);
+        if (!moved) return;
+        addRandomTile();
+        renderGrid();
+
+        if (!canMove()) {
+            setTimeout(() => gameOverModal.classList.remove("hidden"), 80);
+        }
     }
 
     // Лидерборд
@@ -191,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     leadersBtn.onclick = () => { renderLeadersList(); leaderboardModal.classList.remove("hidden"); };
     closeModalBtn.onclick = () => gameOverModal.classList.add("hidden");
     closeLeadersBtn.onclick = () => leaderboardModal.classList.add("hidden");
-    restartBtn.onclick = startGame;
+    restartBtn.onclick = () => startGame();
 
     saveScoreBtn.onclick = () => {
         const name = usernameInput.value.trim() || "Аноним";
@@ -207,12 +194,10 @@ document.addEventListener("DOMContentLoaded", () => {
         gameOverModal.classList.add("hidden");
     };
 
-    // Старт игры
     function startGame() {
         score = 0;
         initGrid();
         addStartTiles();
-        // Сброс undo
         previousGrid = null;
         previousScore = 0;
         renderGrid();
@@ -253,3 +238,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
