@@ -7,7 +7,6 @@ let previousScore = 0;
 document.addEventListener("DOMContentLoaded", () => {
     const scoreSpan = document.getElementById("score");
     const gridContainer = document.getElementById("grid");
-
     const undoBtn = document.getElementById("undo-btn");
     const restartBtn = document.getElementById("restart-btn");
     const leadersBtn = document.getElementById("leaders-btn");
@@ -19,29 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
     const leaderboardTable = document.getElementById("leaderboard-table");
 
-    // --- Создаем кнопки управления для мобильных ---
-    const controlsDiv = document.getElementById("controls");
-    const mobileControls = document.createElement("div");
-    mobileControls.id = "mobile-controls";
-    mobileControls.style.marginTop = "15px";
-    mobileControls.innerHTML = `
-        <button data-dir="up">↑</button>
-        <button data-dir="left">←</button>
-        <button data-dir="down">↓</button>
-        <button data-dir="right">→</button>
-    `;
-    controlsDiv.appendChild(mobileControls);
-
-    mobileControls.querySelectorAll("button").forEach(btn => {
-        btn.onclick = () => move(btn.dataset.dir);
-    });
-
-    // --- Инициализация пустого поля ---
     function initGrid() {
         grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
     }
 
-    // --- Рендер поля ---
     function renderGrid() {
         gridContainer.innerHTML = "";
         for (let r = 0; r < GRID_SIZE; r++) {
@@ -56,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
         scoreSpan.textContent = score;
     }
 
-    // --- Добавление случайной плитки ---
     function addRandomTile() {
         const empty = [];
         for (let r = 0; r < GRID_SIZE; r++)
@@ -67,19 +46,16 @@ document.addEventListener("DOMContentLoaded", () => {
         grid[r][c] = Math.random() < 0.9 ? 2 : 4;
     }
 
-    // --- Начальные плитки 1-3 ---
     function addStartTiles() {
         const count = Math.floor(Math.random() * 3) + 1;
         for (let i = 0; i < count; i++) addRandomTile();
     }
 
-    // --- Сохранение состояния для Undo ---
     function saveState() {
         previousGrid = JSON.parse(JSON.stringify(grid));
         previousScore = score;
     }
 
-    // --- Undo ---
     undoBtn.onclick = () => {
         if (previousGrid) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -88,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- Движение строки влево ---
     function moveRowLeft(row) {
         let arr = row.filter(v => v !== 0);
         let scoreAdd = 0;
@@ -106,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr;
     }
 
-    // --- Поворот матрицы ---
     function rotateGrid(times) {
         for (let t = 0; t < times; t++) {
             let newGrid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -117,33 +91,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- Универсальное движение ---
     function move(direction) {
         saveState();
-        if (direction === "left") {
-            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
-        }
-        if (direction === "right") {
-            rotateGrid(2);
-            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
-            rotateGrid(2);
-        }
-        if (direction === "up") {
-            rotateGrid(3);
-            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
-            rotateGrid(1);
-        }
-        if (direction === "down") {
-            rotateGrid(1);
-            for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
-            rotateGrid(3);
-        }
+        if (direction === "left") for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]);
+        if (direction === "right") { rotateGrid(2); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(2); }
+        if (direction === "up") { rotateGrid(3); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(1); }
+        if (direction === "down") { rotateGrid(1); for (let r = 0; r < GRID_SIZE; r++) grid[r] = moveRowLeft(grid[r]); rotateGrid(3); }
         addRandomTile();
         renderGrid();
         checkGameOver();
     }
 
-    // --- Проверка доступных ходов ---
     function canMove() {
         for (let r = 0; r < GRID_SIZE; r++)
             for (let c = 0; c < GRID_SIZE; c++)
@@ -157,14 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
-    // --- Конец игры ---
     function checkGameOver() {
-        if (!canMove()) {
-            gameOverModal.classList.remove("hidden");
-        }
+        if (!canMove()) gameOverModal.classList.remove("hidden");
     }
 
-    // --- Таблица лидеров ---
     function renderLeadersList() {
         leaderboardTable.innerHTML = "";
         const header = document.createElement("tr");
@@ -184,20 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Кнопка лидеров ---
-    leadersBtn.onclick = () => {
-        renderLeadersList();
-        leaderboardModal.classList.remove("hidden");
-    };
-
-    // --- Закрытие модалок ---
+    leadersBtn.onclick = () => { renderLeadersList(); leaderboardModal.classList.remove("hidden"); };
     closeModalBtn.onclick = () => gameOverModal.classList.add("hidden");
     closeLeadersBtn.onclick = () => leaderboardModal.classList.add("hidden");
-
-    // --- Кнопка рестарта ---
     restartBtn.onclick = startGame;
 
-    // --- Сохранение результата ---
     saveScoreBtn.onclick = () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("leaders") || "[]");
@@ -212,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
         gameOverModal.classList.add("hidden");
     };
 
-    // --- Старт игры ---
     function startGame() {
         score = 0;
         initGrid();
@@ -226,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startGame();
 
-    // --- Управление стрелками ---
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") move("left");
         if (e.key === "ArrowRight") move("right");
@@ -234,16 +177,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "ArrowDown") move("down");
     });
 
-    // --- Свайпы на мобильных устройствах ---
-    let touchStartX = 0;
-    let touchStartY = 0;
+    // Свайпы для мобильных
+    let startX = 0, startY = 0;
     gridContainer.addEventListener("touchstart", e => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
     });
     gridContainer.addEventListener("touchend", e => {
-        let dx = e.changedTouches[0].clientX - touchStartX;
-        let dy = e.changedTouches[0].clientY - touchStartY;
+        let dx = e.changedTouches[0].clientX - startX;
+        let dy = e.changedTouches[0].clientY - startY;
         if (Math.abs(dx) > Math.abs(dy)) {
             if (dx > 20) move("right");
             else if (dx < -20) move("left");
@@ -253,4 +195,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
