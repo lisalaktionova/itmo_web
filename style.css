@@ -1,25 +1,25 @@
 #game-container {
-    width: 300px; /* ширина контейнера */
+    width: 320px; /* немного больше для gap */
     margin: 20px auto;
 }
 
 #grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 колонки одинаковой ширины */
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     background: #bbada0;
     border-radius: 6px;
-    padding: 5px; /* минимальный padding, чтобы плитки не выезжали */
+    padding: 5px;
 }
 
 .tile {
-    background: #cdc1b4;
-    border-radius: 4px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
     font-weight: bold;
+    border-radius: 4px;
+    background: #cdc1b4;
     aspect-ratio: 1 / 1; /* квадратная плитка */
 }
 .tile-2 { background: #eee4da; }
