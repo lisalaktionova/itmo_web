@@ -1,39 +1,27 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #faf8ef;
-    margin: 0;
-    padding: 20px;
-}
-
-h1 {
-    margin: 0;
-}
-
 #game-container {
-    width: 320px;
+    width: 300px; /* ширина контейнера */
     margin: 20px auto;
 }
 
 #grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 колонки одинаковой ширины */
     gap: 10px;
-    padding: 10px;
     background: #bbada0;
     border-radius: 6px;
+    padding: 5px; /* минимальный padding, чтобы плитки не выезжали */
 }
+
 .tile {
-    aspect-ratio: 1 / 1;
+    background: #cdc1b4;
+    border-radius: 4px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
     font-weight: bold;
-    border-radius: 4px;
-    background: #cdc1b4;
+    aspect-ratio: 1 / 1; /* квадратная плитка */
 }
-
 .tile-2 { background: #eee4da; }
 .tile-4 { background: #ede0c8; }
 .tile-8 { background: #f2b179; color: white; }
@@ -45,34 +33,4 @@ h1 {
 .tile-512 { background: #edc850; color: white; }
 .tile-1024 { background: #edc53f; color: white; }
 .tile-2048 { background: #edc22e; color: white; }
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.hidden { display: none; }
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 6px;
-    width: 300px;
-}
-
-#controls button {
-    margin: 5px;
-    padding: 8px 12px;
-}
-
-#score-container {
-    font-size: 18px;
-}
 
