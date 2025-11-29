@@ -7,12 +7,30 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    color: #776e65;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin: 0;
+    color: #776e65;
+}
+
+#score-container {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 10px 0;
+    background: #bbada0;
+    padding: 10px 20px;
+    border-radius: 6px;
+    color: white;
 }
 
 #game-container {
     width: 320px;
     max-width: 90vw;
     margin: 20px 0;
+    position: relative;
 }
 
 #grid {
@@ -23,6 +41,7 @@ body {
     border-radius: 6px;
     padding: 10px;
     box-sizing: border-box;
+    position: relative;
 }
 
 .tile {
@@ -34,34 +53,30 @@ body {
     border-radius: 4px;
     background: #cdc1b4;
     aspect-ratio: 1 / 1;
-    transition: all 0.2s ease;
-}
-
-.tile-2 { background: #eee4da; color: #776e65; }
-.tile-4 { background: #ede0c8; color: #776e65; }
-.tile-8 { background: #f2b179; color: #f9f6f2; }
-.tile-16 { background: #f59563; color: #f9f6f2; }
-.tile-32 { background: #f67c5f; color: #f9f6f2; }
-.tile-64 { background: #f65e3b; color: #f9f6f2; }
-.tile-128 { background: #edcf72; color: #f9f6f2; }
-.tile-256 { background: #edcc61; color: #f9f6f2; }
-.tile-512 { background: #edc850; color: #f9f6f2; }
-.tile-1024 { background: #edc53f; color: #f9f6f2; }
-.tile-2048 { background: #edc22e; color: #f9f6f2; }
-
-/* Добавьте эти стили к существующим */
-
-.tile {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    font-weight: bold;
-    border-radius: 4px;
-    background: #cdc1b4;
-    aspect-ratio: 1 / 1;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     color: #776e65;
+    position: relative;
+}
+
+/* Анимации */
+.tile-new {
+    animation: appear 0.3s ease;
+}
+
+.tile-merged {
+    animation: pop 0.3s ease;
+}
+
+@keyframes appear {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
 /* Цвета для плиток */
@@ -77,40 +92,44 @@ body {
 .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 18px; }
 .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 18px; }
 
-/* Стили для таблицы лидеров */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 10px 0;
+/* Виртуальные кнопки управления */
+.mobile-controls {
+    display: none; /* По умолчанию скрыты на десктопе */
+    grid-template-areas: 
+        ". up ."
+        "left down right";
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
 }
 
-th, td {
-    padding: 8px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
+.control-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    border: none;
+    border-radius: 8px;
+    background: #8f7a66;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-th {
-    background-color: #f2f2f2;
+.control-btn:hover {
+    background: #7c6a5a;
 }
 
-/* Адаптивность для мобильных */
-@media (max-width: 480px) {
-    #game-container {
-        width: 280px;
-    }
-    
-    .tile {
-        font-size: 18px;
-    }
-    
-    .tile-128, .tile-256, .tile-512 {
-        font-size: 16px;
-    }
-    
-    .tile-1024, .tile-2048 {
-        font-size: 14px;
-    }
+#up-btn { grid-area: up; }
+#down-btn { grid-area: down; }
+#left-btn { grid-area: left; }
+#right-btn { grid-area: right; }
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 button {
@@ -128,20 +147,9 @@ button:hover {
     background: #7c6a5a;
 }
 
-input {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 200px;
-    max-width: 100%;
-}
-
-#controls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+button:disabled {
+    background: #d8d4d0;
+    cursor: not-allowed;
 }
 
 /* Модалки */
@@ -160,8 +168,118 @@ input {
 
 .modal-content {
     background: white;
-    padding: 20px;
-    border-radius: 6px;
-    min-width: 260px;
+    padding: 30px;
+    border-radius: 10px;
+    min-width: 300px;
+    max-width: 90vw;
     text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #776e65;
+}
+
+input {
+    padding: 10px;
+    border: 2px solid #bbada0;
+    border-radius: 4px;
+    width: 200px;
+    max-width: 100%;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+input:focus {
+    outline: none;
+    border-color: #8f7a66;
+}
+
+/* Стили для таблицы лидеров */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 8px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #776e65;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    #game-container {
+        width: 280px;
+    }
+    
+    .tile {
+        font-size: 18px;
+    }
+    
+    .tile-128, .tile-256, .tile-512 {
+        font-size: 16px;
+    }
+    
+    .tile-1024, .tile-2048 {
+        font-size: 14px;
+    }
+    
+    .mobile-controls {
+        display: grid; /* Показываем на мобильных */
+    }
+    
+    #controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    button {
+        width: 200px;
+        margin: 5px 0;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 20px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    #game-container {
+        width: 400px;
+    }
+    
+    .mobile-controls {
+        display: grid; /* Показываем на планшетах */
+    }
+}
+
+/* Анимация для плавного перемещения плиток */
+.tile.moving {
+    transition: transform 0.15s ease;
+    z-index: 10;
 }
