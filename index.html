@@ -15,37 +15,43 @@
         <div id="grid"></div>
     </div>
 
+    <!-- Виртуальные кнопки управления для мобильных -->
+    <div id="mobile-controls" class="mobile-controls">
+        <button id="up-btn" class="control-btn">↑</button>
+        <button id="left-btn" class="control-btn">←</button>
+        <button id="down-btn" class="control-btn">↓</button>
+        <button id="right-btn" class="control-btn">→</button>
+    </div>
+
     <div id="controls">
         <button id="undo-btn">Отмена</button>
         <button id="restart-btn">Начать заново</button>
         <button id="leaders-btn">Лидеры</button>
     </div>
 
-<!-- Модалка конца игры -->
-<div id="game-over-modal" class="modal hidden">
-    <div class="modal-content">
-        <p id="game-over-text">Игра окончена!</p>
-        <input id="username" placeholder="Ваше имя">
-        <div style="margin-top:10px;">
-            <button id="save-score-btn">Сохранить результат</button>
-            <button id="resume-btn">Вернуться к игре</button>
+    <!-- Модалка конца игры -->
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <p id="game-over-text">Игра окончена!</p>
+            <input id="username" placeholder="Ваше имя">
+            <div style="margin-top:10px;">
+                <button id="save-score-btn">Сохранить результат</button>
+                <button id="resume-btn">Начать заново</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Лидерборд -->
-<div id="leaderboard-modal" class="modal hidden">
-    <div class="modal-content">
-        <h2>Таблица лидеров</h2>
-        <table id="leaderboard-table"></table>
-        <div style="margin-top:10px;">
-            <button id="close-leaders-btn">Закрыть</button>
+    <!-- Лидерборд -->
+    <div id="leaderboard-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Таблица лидеров</h2>
+            <table id="leaderboard-table"></table>
+            <div style="margin-top:10px;">
+                <button id="close-leaders-btn">Закрыть</button>
+            </div>
         </div>
     </div>
-</div>
-
 
     <script src="script.js"></script>
 </body>
 </html>
-
