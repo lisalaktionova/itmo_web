@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2048</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,44 +11,45 @@
 <div class="container">
     <h1>2048</h1>
 
-    <div id="score-container">
+    <div class="score-box">
         Очки: <span id="score">0</span>
     </div>
 
     <div id="game-container">
-        <div id="grid"></div>
+        <div id="grid-background"></div>
+        <div id="tiles-layer"></div>
     </div>
 
-    <div id="mobile-controls" class="mobile-controls">
-        <button id="up-btn">↑</button>
-        <button id="left-btn">←</button>
-        <button id="down-btn">↓</button>
-        <button id="right-btn">→</button>
+    <div class="controls">
+        <button id="undo">Отмена</button>
+        <button id="restart">Заново</button>
+        <button id="leaders">Лидеры</button>
     </div>
 
-    <div id="controls">
-        <button id="undo-btn">Отмена хода</button>
-        <button id="restart-btn">Начать заново</button>
-        <button id="leaders-btn">Таблица лидеров</button>
+    <div class="mobile-controls">
+        <button id="up">↑</button>
+        <button id="left">←</button>
+        <button id="down">↓</button>
+        <button id="right">→</button>
     </div>
 </div>
 
 <!-- GAME OVER -->
-<div id="game-over-modal" class="modal hidden">
+<div id="gameover" class="modal hidden">
     <div class="modal-content">
-        <h2 id="game-over-text">Игра окончена!</h2>
+        <h2 id="gameover-text">Игра окончена</h2>
         <input id="username" placeholder="Ваше имя">
-        <button id="save-score-btn">Сохранить результат</button>
-        <button id="resume-btn">Начать заново</button>
+        <button id="save-score">Сохранить</button>
+        <button onclick="restartGame()">Новая игра</button>
     </div>
 </div>
 
 <!-- LEADERS -->
-<div id="leaderboard-modal" class="modal hidden">
+<div id="leaders-modal" class="modal hidden">
     <div class="modal-content">
         <h2>Таблица лидеров</h2>
-        <table id="leaderboard-table"></table>
-        <button id="close-leaders-btn">Закрыть</button>
+        <table id="leaders-table"></table>
+        <button onclick="closeLeaders()">Закрыть</button>
     </div>
 </div>
 
