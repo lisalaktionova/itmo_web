@@ -8,9 +8,10 @@ body {
 
 .container {
     text-align: center;
+    margin-top: 30px;
 }
 
-.score-box {
+.score {
     background: #bbada0;
     color: white;
     padding: 10px 20px;
@@ -18,7 +19,7 @@ body {
     margin-bottom: 10px;
 }
 
-#game-container {
+#game {
     position: relative;
     width: 320px;
     height: 320px;
@@ -27,20 +28,23 @@ body {
     border-radius: 6px;
 }
 
-#grid-background {
+/* ===== СЕТКА ===== */
+#grid {
     position: absolute;
     inset: 10px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     gap: 10px;
 }
 
-.bg {
-    background: rgba(238,228,218,.35);
+.grid-cell {
+    background: rgba(238, 228, 218, 0.35);
     border-radius: 4px;
 }
 
-#tiles-layer {
+/* ===== ПЛИТКИ ===== */
+#tiles {
     position: absolute;
     inset: 10px;
 }
@@ -49,17 +53,21 @@ body {
     position: absolute;
     width: calc(25% - 7.5px);
     height: calc(25% - 7.5px);
+    border-radius: 4px;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
     font-size: 26px;
     font-weight: bold;
-    border-radius: 4px;
-    transition: transform .18s ease;
+
+    transition: transform 0.18s ease;
 }
 
+/* merge-анимация */
 .tile-merged {
-    animation: pop .25s ease;
+    animation: pop 0.25s ease;
 }
 
 @keyframes pop {
@@ -68,20 +76,20 @@ body {
     100% { transform: scale(1); }
 }
 
-/* colors */
-.tile-2 { background:#eee4da; }
-.tile-4 { background:#ede0c8; }
-.tile-8 { background:#f2b179; color:#fff; }
-.tile-16 { background:#f59563; color:#fff; }
-.tile-32 { background:#f67c5f; color:#fff; }
-.tile-64 { background:#f65e3b; color:#fff; }
-.tile-128 { background:#edcf72; color:#fff; }
-.tile-256 { background:#edcc61; color:#fff; }
-.tile-512 { background:#edc850; color:#fff; }
-.tile-1024 { background:#edc53f; color:#fff; }
-.tile-2048 { background:#edc22e; color:#fff; }
+/* цвета плиток */
+.tile-2 { background: #eee4da; }
+.tile-4 { background: #ede0c8; }
+.tile-8 { background: #f2b179; color: white; }
+.tile-16 { background: #f59563; color: white; }
+.tile-32 { background: #f67c5f; color: white; }
+.tile-64 { background: #f65e3b; color: white; }
+.tile-128 { background: #edcf72; color: white; }
+.tile-256 { background: #edcc61; color: white; }
+.tile-512 { background: #edc850; color: white; }
+.tile-1024 { background: #edc53f; color: white; }
+.tile-2048 { background: #edc22e; color: white; }
 
-.controls, .mobile-controls {
+.buttons {
     margin-top: 10px;
     display: flex;
     justify-content: center;
@@ -92,40 +100,7 @@ button {
     background: #8f7a66;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
-}
-
-.mobile-controls {
-    display: none;
-    grid-template-areas:
-        ". up ."
-        "left down right";
-}
-
-#up { grid-area: up; }
-#down { grid-area: down; }
-#left { grid-area: left; }
-#right { grid-area: right; }
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal.hidden { display: none; }
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-@media (max-width: 768px) {
-    .mobile-controls { display: grid; }
 }
