@@ -6,13 +6,24 @@
     <title>2048</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Временные стили для отладки */
-        .debug {
-            border: 1px solid red;
+        /* ВРЕМЕННЫЕ СТИЛИ ДЛЯ ОТЛАДКИ */
+        body.debug * {
+            border: 1px solid rgba(255,0,0,0.3) !important;
+        }
+        
+        #grid.debug {
+            border: 2px solid blue !important;
+            background: rgba(0,0,255,0.1) !important;
+        }
+        
+        .tile.debug {
+            border: 1px solid green !important;
+            background: rgba(0,255,0,0.1) !important;
         }
     </style>
 </head>
 <body>
+    <!-- Остальной HTML без изменений -->
     <div class="container">
         <header>
             <h1>2048</h1>
@@ -41,7 +52,7 @@
             </div>
         </main>
 
-        <!-- Модальное окно окончания игры -->
+        <!-- Модальные окна без изменений -->
         <div id="game-over-modal" class="modal hidden">
             <div class="modal-content">
                 <h2>Игра окончена!</h2>
@@ -54,7 +65,6 @@
             </div>
         </div>
 
-        <!-- Модальное окно таблицы лидеров -->
         <div id="leaderboard-modal" class="modal hidden">
             <div class="modal-content">
                 <h2>Таблица лидеров</h2>
