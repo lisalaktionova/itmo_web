@@ -1,3 +1,4 @@
+/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -9,22 +10,18 @@ body {
     background: #faf8ef;
     color: #776e65;
     min-height: 100vh;
+    padding: 20px;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
 }
 
 .container {
     width: 100%;
     max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
+/* HEADER */
 header {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -33,28 +30,25 @@ header {
 
 h1 {
     font-size: 3em;
-    font-weight: bold;
     color: #776e65;
 }
 
 .score-container {
     background: #bbada0;
-    padding: 10px 25px;
+    padding: 10px 20px;
     border-radius: 6px;
     color: white;
     font-size: 1.3em;
     font-weight: bold;
 }
 
-/* ОСНОВНОЙ КОНТЕЙНЕР ИГРЫ */
+/* GAME CONTAINER */
 #game-container {
     width: 100%;
-    max-width: 500px;
     margin: 20px 0;
-    position: relative;
 }
 
-/* СЕТКА 4x4 */
+/* GRID - САМОЕ ВАЖНОЕ! */
 #grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -63,108 +57,96 @@ h1 {
     background: #bbada0;
     border-radius: 6px;
     padding: 10px;
+    
+    /* Фиксируем размер сетки */
     width: 100%;
-    height: 500px;
-    max-height: 90vw;
-    aspect-ratio: 1/1;
+    height: 500px; /* Фиксированная высота */
+    max-height: 90vw; /* Для мобильных */
 }
 
-/* БАЗОВЫЙ СТИЛЬ ПЛИТКИ */
+/* TILES */
 .tile {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 35px;
-    font-weight: bold;
-    border-radius: 3px;
-    background: rgba(238, 228, 218, 0.35);
-    transition: all 0.15s ease;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 35px !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    background: rgba(238, 228, 218, 0.35) !important;
+    
+    /* Гарантируем, что плитки видны */
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
 }
 
-/* Цвета для различных значений плиток */
+/* Цвета плиток - убедитесь, что эти стили применяются */
 .tile-2 { 
-    background: #eee4da; 
-    color: #776e65;
+    background: #eee4da !important; 
+    color: #776e65 !important;
 }
 .tile-4 { 
-    background: #ede0c8; 
-    color: #776e65;
+    background: #ede0c8 !important; 
+    color: #776e65 !important;
 }
 .tile-8 { 
-    background: #f2b179; 
-    color: #f9f6f2;
+    background: #f2b179 !important; 
+    color: #f9f6f2 !important;
 }
 .tile-16 { 
-    background: #f59563; 
-    color: #f9f6f2;
+    background: #f59563 !important; 
+    color: #f9f6f2 !important;
 }
 .tile-32 { 
-    background: #f67c5f; 
-    color: #f9f6f2;
+    background: #f67c5f !important; 
+    color: #f9f6f2 !important;
 }
 .tile-64 { 
-    background: #f65e3b; 
-    color: #f9f6f2;
+    background: #f65e3b !important; 
+    color: #f9f6f2 !important;
 }
 .tile-128 { 
-    background: #edcf72; 
-    color: #f9f6f2;
-    font-size: 30px;
+    background: #edcf72 !important; 
+    color: #f9f6f2 !important;
 }
 .tile-256 { 
-    background: #edcc61; 
-    color: #f9f6f2;
-    font-size: 30px;
+    background: #edcc61 !important; 
+    color: #f9f6f2 !important;
 }
 .tile-512 { 
-    background: #edc850; 
-    color: #f9f6f2;
-    font-size: 30px;
+    background: #edc850 !important; 
+    color: #f9f6f2 !important;
 }
 .tile-1024 { 
-    background: #edc53f; 
-    color: #f9f6f2;
-    font-size: 25px;
+    background: #edc53f !important; 
+    color: #f9f6f2 !important;
 }
 .tile-2048 { 
-    background: #edc22e; 
-    color: #f9f6f2;
-    font-size: 25px;
+    background: #edc22e !important; 
+    color: #f9f6f2 !important;
 }
 
-/* Анимации */
-@keyframes appear {
-    0% { 
-        transform: scale(0); 
-        opacity: 0;
-    }
-    100% { 
-        transform: scale(1); 
-        opacity: 1;
-    }
+/* КНОПКИ УПРАВЛЕНИЯ */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-@keyframes pop {
-    0% { 
-        transform: scale(1); 
-    }
-    50% { 
-        transform: scale(1.2); 
-    }
-    100% { 
-        transform: scale(1); 
-    }
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #8f7a66;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 150px;
 }
 
-.tile.new {
-    animation: appear 0.2s ease;
-}
-
-.tile.merged {
-    animation: pop 0.2s ease;
-}
-
-/* Виртуальные кнопки управления */
+/* Виртуальные кнопки для мобильных */
 .mobile-controls {
     display: none;
     grid-template-areas: 
@@ -191,64 +173,7 @@ h1 {
 #left-btn { grid-area: left; }
 #right-btn { grid-area: right; }
 
-/* Основные кнопки управления */
-.controls {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    background: #8f7a66;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    min-width: 150px;
-}
-
-/* Модальные окна */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-}
-
-/* Футер */
-.instructions {
-    margin-top: 20px;
-    text-align: center;
-    padding: 15px;
-    background: #f8f5f0;
-    border-radius: 6px;
-    width: 100%;
-}
-
-/* Адаптивность */
+/* АДАПТИВНОСТЬ */
 @media (max-width: 520px) {
     #grid {
         height: 400px;
@@ -257,19 +182,12 @@ button {
     }
     
     .tile {
-        font-size: 28px;
+        font-size: 28px !important;
     }
     
-    .tile-128, .tile-256, .tile-512 {
-        font-size: 24px;
-    }
-    
-    .tile-1024, .tile-2048 {
-        font-size: 20px;
-    }
-    
-    .mobile-controls {
-        display: grid;
+    header {
+        flex-direction: column;
+        gap: 15px;
     }
     
     .controls {
@@ -277,9 +195,8 @@ button {
         align-items: center;
     }
     
-    button {
-        width: 100%;
-        max-width: 250px;
+    .mobile-controls {
+        display: grid;
     }
 }
 
@@ -289,10 +206,6 @@ button {
     }
     
     .tile {
-        font-size: 24px;
-    }
-    
-    h1 {
-        font-size: 2.5em;
+        font-size: 24px !important;
     }
 }
