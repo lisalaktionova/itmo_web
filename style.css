@@ -1,118 +1,155 @@
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
 body {
     font-family: 'Arial', sans-serif;
     background: #faf8ef;
-    margin: 0;
-    padding: 20px;
+    color: #776e65;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
-    color: #776e65;
+    justify-content: flex-start;
+    padding: 20px;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 header {
-    text-align: center;
     width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 h1 {
     font-size: 3em;
-    margin: 10px 0;
+    font-weight: bold;
     color: #776e65;
+    text-align: center;
+    margin: 0;
 }
 
 .score-container {
-    font-size: 1.2em;
-    font-weight: bold;
-    margin: 10px 0;
     background: #bbada0;
-    padding: 10px 20px;
+    padding: 10px 25px;
     border-radius: 6px;
     color: white;
-    display: inline-block;
-}
-
-main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    min-width: 150px;
 }
 
 #game-container {
-    width: 320px;
-    height: 320px;
+    width: 100%;
+    max-width: 500px;
     margin: 20px auto;
     position: relative;
 }
 
-.grid {
+#grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px;
     background: #bbada0;
-    border-radius: 6px;
-    padding: 10px;
+    border-radius: 8px;
+    padding: 12px;
     width: 100%;
-    height: 100%;
-}
-
-.cell {
-    background: rgba(205, 193, 180, 0.35);
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.tile-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    aspect-ratio: 1/1;
     position: relative;
 }
 
 .tile {
-    width: 100%;
-    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: bold;
-    border-radius: 4px;
-    transition: transform 0.15s ease;
-    position: absolute;
-    top: 0;
-    left: 0;
+    border-radius: 6px;
+    background: rgba(205, 193, 180, 0.35);
+    aspect-ratio: 1/1;
+    transition: all 0.15s ease-out;
+    position: relative;
+    z-index: 1;
 }
 
-.tile.new {
-    animation: appear 0.3s ease;
+/* Цвета плиток */
+.tile-2 { 
+    background: #eee4da; 
+    color: #776e65;
+    font-size: 42px;
+}
+.tile-4 { 
+    background: #ede0c8; 
+    color: #776e65;
+    font-size: 42px;
+}
+.tile-8 { 
+    background: #f2b179; 
+    color: #f9f6f2;
+    font-size: 42px;
+}
+.tile-16 { 
+    background: #f59563; 
+    color: #f9f6f2;
+    font-size: 38px;
+}
+.tile-32 { 
+    background: #f67c5f; 
+    color: #f9f6f2;
+    font-size: 38px;
+}
+.tile-64 { 
+    background: #f65e3b; 
+    color: #f9f6f2;
+    font-size: 38px;
+}
+.tile-128 { 
+    background: #edcf72; 
+    color: #f9f6f2;
+    font-size: 34px;
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.3);
+}
+.tile-256 { 
+    background: #edcc61; 
+    color: #f9f6f2;
+    font-size: 34px;
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.4);
+}
+.tile-512 { 
+    background: #edc850; 
+    color: #f9f6f2;
+    font-size: 34px;
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.5);
+}
+.tile-1024 { 
+    background: #edc53f; 
+    color: #f9f6f2;
+    font-size: 28px;
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.6);
+}
+.tile-2048 { 
+    background: #edc22e; 
+    color: #f9f6f2;
+    font-size: 28px;
+    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.7);
 }
 
-.tile.merged {
-    animation: pop 0.3s ease;
-}
-
+/* Анимации */
 @keyframes appear {
     0% { 
         transform: scale(0); 
@@ -140,65 +177,19 @@ main {
     }
 }
 
-/* Цвета плиток */
-.tile-2 { 
-    background: #eee4da; 
-    color: #776e65;
+.tile.new {
+    animation: appear 0.3s ease;
+    z-index: 10;
 }
 
-.tile-4 { 
-    background: #ede0c8; 
-    color: #776e65;
+.tile.merged {
+    animation: pop 0.3s ease;
+    z-index: 20;
 }
 
-.tile-8 { 
-    background: #f2b179; 
-    color: #f9f6f2;
-}
-
-.tile-16 { 
-    background: #f59563; 
-    color: #f9f6f2;
-}
-
-.tile-32 { 
-    background: #f67c5f; 
-    color: #f9f6f2;
-}
-
-.tile-64 { 
-    background: #f65e3b; 
-    color: #f9f6f2;
-}
-
-.tile-128 { 
-    background: #edcf72; 
-    color: #f9f6f2; 
-    font-size: 20px;
-}
-
-.tile-256 { 
-    background: #edcc61; 
-    color: #f9f6f2; 
-    font-size: 20px;
-}
-
-.tile-512 { 
-    background: #edc850; 
-    color: #f9f6f2; 
-    font-size: 20px;
-}
-
-.tile-1024 { 
-    background: #edc53f; 
-    color: #f9f6f2; 
-    font-size: 18px;
-}
-
-.tile-2048 { 
-    background: #edc22e; 
-    color: #f9f6f2; 
-    font-size: 18px;
+.tile.moving {
+    transition: transform 0.15s ease;
+    z-index: 30;
 }
 
 /* Виртуальные кнопки управления */
@@ -208,7 +199,7 @@ main {
         ". up ."
         "left down right";
     gap: 10px;
-    margin: 20px 0;
+    margin: 25px 0;
     justify-content: center;
 }
 
@@ -217,23 +208,17 @@ main {
     height: 70px;
     font-size: 28px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #8f7a66;
     color: white;
     cursor: pointer;
     transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.control-btn:hover {
-    background: #7c6a5a;
-    transform: scale(1.05);
+    box-shadow: 0 4px 0 #7c6a5a;
 }
 
 .control-btn:active {
-    transform: scale(0.95);
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #7c6a5a;
 }
 
 #up-btn { grid-area: up; }
@@ -241,11 +226,11 @@ main {
 #left-btn { grid-area: left; }
 #right-btn { grid-area: right; }
 
-/* Кнопки управления игрой */
+/* Основные кнопки управления */
 .controls {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     margin: 20px 0;
     flex-wrap: wrap;
 }
@@ -260,6 +245,7 @@ button {
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s;
+    min-width: 160px;
 }
 
 button:hover {
@@ -269,12 +255,6 @@ button:hover {
 
 button:active {
     transform: translateY(0);
-}
-
-button:disabled {
-    background: #d8d4d0;
-    cursor: not-allowed;
-    transform: none;
 }
 
 /* Модальные окна */
@@ -289,96 +269,79 @@ button:disabled {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    opacity: 1;
-    transition: opacity 0.3s ease;
+    padding: 20px;
 }
 
 .modal.hidden {
     display: none;
-    opacity: 0;
 }
 
 .modal-content {
     background: white;
     padding: 30px;
     border-radius: 12px;
-    min-width: 300px;
-    max-width: 90vw;
+    max-width: 400px;
+    width: 100%;
     text-align: center;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    transform: translateY(0);
-    animation: modalAppear 0.3s ease;
-}
-
-@keyframes modalAppear {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .modal-content h2 {
-    margin-top: 0;
+    margin-bottom: 20px;
     color: #776e65;
-    font-size: 24px;
 }
 
-.modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-input {
+.modal-content input {
+    width: 100%;
     padding: 12px;
+    margin: 15px 0;
     border: 2px solid #bbada0;
     border-radius: 6px;
-    width: 100%;
-    max-width: 300px;
     font-size: 16px;
-    margin: 15px 0;
-    transition: border-color 0.2s;
 }
 
-input:focus {
+.modal-content input:focus {
     outline: none;
     border-color: #8f7a66;
 }
 
-/* Таблица лидеров */
-.table-container {
-    max-height: 400px;
-    overflow-y: auto;
-    margin: 15px 0;
-    border-radius: 6px;
-    border: 2px solid #eee;
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
 }
 
+.modal-buttons button {
+    width: 100%;
+}
+
+/* Таблица лидеров */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin: 20px 0;
     background: white;
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: center;
-    border-bottom: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 th {
-    background-color: #f8f5f0;
+    background: #8f7a66;
+    color: white;
+    padding: 12px;
     font-weight: bold;
-    color: #776e65;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+tr:last-child td {
+    border-bottom: none;
 }
 
 tr:hover {
@@ -387,51 +350,62 @@ tr:hover {
 
 /* Футер */
 .instructions {
+    margin-top: 30px;
     text-align: center;
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(143, 122, 102, 0.1);
+    padding: 20px;
+    background: #f8f5f0;
     border-radius: 8px;
     width: 100%;
-    max-width: 500px;
 }
 
 .instructions p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: #776e65;
+    margin: 10px 0;
+    line-height: 1.5;
 }
 
 /* Адаптивность */
 @media (max-width: 480px) {
     body {
         padding: 10px;
-        justify-content: flex-start;
+    }
+    
+    header {
+        flex-direction: column;
+        text-align: center;
     }
     
     h1 {
-        font-size: 2.2em;
+        font-size: 2.5em;
     }
     
-    .container {
-        padding: 0 10px;
+    .score-container {
+        font-size: 1.1em;
+        min-width: 130px;
     }
     
-    #game-container {
-        width: 280px;
-        height: 280px;
+    #grid {
+        gap: 8px;
+        padding: 8px;
     }
     
     .tile {
-        font-size: 18px;
+        font-size: 24px;
+    }
+    
+    .tile-2, .tile-4, .tile-8 {
+        font-size: 32px;
+    }
+    
+    .tile-16, .tile-32, .tile-64 {
+        font-size: 28px;
     }
     
     .tile-128, .tile-256, .tile-512 {
-        font-size: 16px;
+        font-size: 24px;
     }
     
     .tile-1024, .tile-2048 {
-        font-size: 14px;
+        font-size: 20px;
     }
     
     .mobile-controls {
@@ -441,48 +415,27 @@ tr:hover {
     .controls {
         flex-direction: column;
         align-items: center;
-        width: 100%;
     }
     
-    .controls button {
+    button {
         width: 100%;
         max-width: 280px;
-        margin: 5px 0;
     }
     
-    .modal-content {
-        padding: 20px;
-        margin: 10px;
-    }
-    
-    .modal-buttons {
-        flex-direction: column;
-    }
-    
-    .modal-buttons button {
-        width: 100%;
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
     }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-    #game-container {
-        width: 400px;
-        height: 400px;
+    #grid {
+        gap: 10px;
+        padding: 10px;
     }
     
     .mobile-controls {
         display: grid;
-    }
-    
-    .control-btn {
-        width: 80px;
-        height: 80px;
-        font-size: 32px;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-controls {
-        display: none !important;
     }
 }
