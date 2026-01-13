@@ -4,13 +4,12 @@ let score = 0;
 let previousGrid = null;
 let previousScore = 0;
 let gameOver = false;
-let tiles = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM loaded");
     
     const scoreSpan = document.getElementById("score");
-    const gridContainer = document.getElementById("grid");
+    const gameContainer = document.getElementById("game-container");
     const undoBtn = document.getElementById("undo-btn");
     const restartBtn = document.getElementById("restart-btn");
     const leadersBtn = document.getElementById("leaders-btn");
@@ -30,12 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const rightBtn = document.getElementById("right-btn");
     
     // Проверяем, что элементы найдены
-    if (!gridContainer) {
-        console.error("Элемент #grid не найден!");
+    if (!gameContainer) {
+        console.error("Элемент #game-container не найден!");
         return;
     }
-    
-    console.log("Grid container found:", gridContainer);
     
     // Инициализация игры
     initGame();
@@ -49,25 +46,37 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.push(Array(GRID_SIZE).fill(0));
         }
         
-        tiles = [];
         score = 0;
         previousGrid = null;
         previousScore = 0;
         gameOver = false;
         
         // Очищаем контейнер
-        gridContainer.innerHTML = '';
+        gameContainer.innerHTML = '';
         
-        // Создаем пустые клетки
+        // Создаем сетку 4x4
+        const gridElement = document.createElement("div");
+        gridElement.id = "grid";
+        gridElement.className = "grid";
+        
+        // Создаем 16 ячеек
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 const cell = document.createElement("div");
                 cell.className = "cell";
                 cell.dataset.row = r;
                 cell.dataset.col = c;
-                gridContainer.appendChild(cell);
+                
+                // Создаем контейнер для плитки внутри ячейки
+                const tileContainer = document.createElement("div");
+                tileContainer.className = "tile-container";
+                cell.appendChild(tileContainer);
+                
+                gridElement.appendChild(cell);
             }
         }
+        
+        gameContainer.appendChild(gridElement);
         
         // Добавляем 2 начальные плитки
         addRandomTile();
@@ -92,15 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Игра инициализирована");
     }
     
-    function getPosition(row, col) {
-        const cellSize = (gridContainer.clientWidth - 50) / GRID_SIZE;
-        const gap = 10;
-        return {
-            x: col * (cellSize + gap) + gap / 2,
-            y: row * (cellSize + gap) + gap / 2
-        };
-    }
-    
     function renderGrid() {
         console.log("Рендеринг сетки...");
         
@@ -109,61 +109,43 @@ document.addEventListener("DOMContentLoaded", () => {
             scoreSpan.textContent = score;
         }
         
-        // Удаляем старые плитки
-        tiles.forEach(tile => {
-            if (tile.element && tile.element.parentNode) {
-                tile.element.remove();
-            }
-        });
+        // Очищаем все плитки
+        document.querySelectorAll('.tile').forEach(tile => tile.remove());
         
-        tiles = [];
-        
-        // Создаем новые плитки на основе grid
+        // Создаем плитки на основе grid
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
                 const value = grid[r][c];
                 if (value !== 0) {
-                    const tile = createTile(r, c, value, false);
-                    tiles.push(tile);
+                    createTile(r, c, value);
                 }
             }
         }
-        
-        console.log("Сетка отрендерена. Количество плиток:", tiles.length);
     }
     
-    function createTile(row, col, value, isNew = false) {
-        const element = document.createElement("div");
-        element.className = `tile tile-${value}`;
-        if (value > 2048) {
-            element.classList.add(`tile-${Math.min(value, 4096)}`);
-        }
+    function createTile(row, col, value) {
+        // Находим ячейку
+        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        if (!cell) return;
         
-        element.textContent = value;
+        const tileContainer = cell.querySelector('.tile-container');
+        if (!tileContainer) return;
         
-        const pos = getPosition(row, col);
-        element.style.left = `${pos.x}px`;
-        element.style.top = `${pos.y}px`;
+        // Создаем плитку
+        const tile = document.createElement("div");
+        tile.className = `tile tile-${value}`;
+        tile.textContent = value;
+        tile.dataset.value = value;
         
-        element.dataset.row = row;
-        element.dataset.col = col;
-        element.dataset.value = value;
+        // Добавляем класс для анимации появления
+        tile.classList.add('new');
         
-        gridContainer.appendChild(element);
+        tileContainer.appendChild(tile);
         
-        if (isNew) {
-            element.classList.add('new');
-            setTimeout(() => {
-                element.classList.remove('new');
-            }, 300);
-        }
-        
-        return {
-            row,
-            col,
-            value,
-            element
-        };
+        // Убираем класс анимации после завершения
+        setTimeout(() => {
+            tile.classList.remove('new');
+        }, 300);
     }
     
     function addRandomTile() {
@@ -185,10 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // С вероятностью 90% ставим 2, с 10% - 4
             const value = Math.random() < 0.9 ? 2 : 4;
             grid[r][c] = value;
-            
-            // Создаем новую плитку с анимацией
-            const tile = createTile(r, c, value, true);
-            tiles.push(tile);
             
             return true;
         }
@@ -222,16 +200,14 @@ document.addEventListener("DOMContentLoaded", () => {
         let scoreAdd = 0;
         
         // Объединяем одинаковые плитки
-        let i = 0;
-        while (i < filtered.length) {
+        for (let i = 0; i < filtered.length; i++) {
             if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
                 const mergedValue = filtered[i] * 2;
                 result.push(mergedValue);
                 scoreAdd += mergedValue; // Добавляем значение объединенной плитки
-                i += 2; // Пропускаем обе плитки
+                i++; // Пропускаем следующую плитку
             } else {
                 result.push(filtered[i]);
-                i++;
             }
         }
         
@@ -261,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const before = JSON.parse(JSON.stringify(grid));
         const beforeScore = score;
         let moved = false;
+        let scoreAdd = 0;
         
         if (direction === "left") {
             for (let r = 0; r < GRID_SIZE; r++) {
@@ -269,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     moved = true;
                 }
                 grid[r] = result.row;
-                score += result.score;
+                scoreAdd += result.score;
             }
         } else if (direction === "right") {
             rotateGrid(2); // 180 градусов
@@ -279,34 +256,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     moved = true;
                 }
                 grid[r] = result.row;
-                score += result.score;
+                scoreAdd += result.score;
             }
             rotateGrid(2); // Возвращаем обратно
         } else if (direction === "up") {
-            rotateGrid(1); // 90 градусов против часовой (влево)
+            rotateGrid(3); // 270 градусов = 90 градусов против часовой
             for (let r = 0; r < GRID_SIZE; r++) {
                 const result = moveRowLeft(grid[r]);
                 if (!arraysEqual(grid[r], result.row)) {
                     moved = true;
                 }
                 grid[r] = result.row;
-                score += result.score;
-            }
-            rotateGrid(3); // Возвращаем обратно (270 по часовой)
-        } else if (direction === "down") {
-            rotateGrid(3); // 270 против часовой = 90 по часовой
-            for (let r = 0; r < GRID_SIZE; r++) {
-                const result = moveRowLeft(grid[r]);
-                if (!arraysEqual(grid[r], result.row)) {
-                    moved = true;
-                }
-                grid[r] = result.row;
-                score += result.score;
+                scoreAdd += result.score;
             }
             rotateGrid(1); // Возвращаем обратно
+        } else if (direction === "down") {
+            rotateGrid(1); // 90 градусов по часовой
+            for (let r = 0; r < GRID_SIZE; r++) {
+                const result = moveRowLeft(grid[r]);
+                if (!arraysEqual(grid[r], result.row)) {
+                    moved = true;
+                }
+                grid[r] = result.row;
+                scoreAdd += result.score;
+            }
+            rotateGrid(3); // Возвращаем обратно
         }
         
-        return moved || score !== beforeScore;
+        score += scoreAdd;
+        
+        return moved || scoreAdd > 0;
     }
     
     function arraysEqual(a, b) {
@@ -315,10 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (a[i] !== b[i]) return false;
         }
         return true;
-    }
-    
-    function gridsEqual(a, b) {
-        return JSON.stringify(a) === JSON.stringify(b);
     }
     
     function canMove() {
@@ -359,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (moved) {
             console.log("Ход выполнен, добавляем новую плитку");
             // Добавляем новую плитку
-            const added = addRandomTile();
+            addRandomTile();
             
             // Обновляем отображение
             renderGrid();
@@ -543,13 +518,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Свайпы для мобильных
     let startX = 0, startY = 0;
     
-    gridContainer.addEventListener("touchstart", e => {
+    gameContainer.addEventListener("touchstart", e => {
         if (gameOver) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
     }, { passive: true });
     
-    gridContainer.addEventListener("touchend", e => {
+    gameContainer.addEventListener("touchend", e => {
         if (gameOver) return;
         
         const endX = e.changedTouches[0].clientX;
@@ -598,6 +573,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (isNaN(score)) score = 0;
                 
                 console.log("Загружена сохраненная игра");
+                // Создаем сетку
+                initGridStructure();
                 renderGrid();
                 
                 if (gameOver) {
@@ -618,20 +595,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
-    loadGameState();
-    
-    // Обновляем видимость мобильных кнопок
-    function updateMobileControls() {
-        const mobileControls = document.getElementById('mobile-controls');
-        if (window.innerWidth <= 768 && !gameOver && !leaderboardModal.classList.contains('hidden')) {
-            mobileControls.style.display = 'grid';
-        } else {
-            mobileControls.style.display = 'none';
+    // Создание структуры сетки
+    function initGridStructure() {
+        gameContainer.innerHTML = '';
+        
+        // Создаем сетку 4x4
+        const gridElement = document.createElement("div");
+        gridElement.id = "grid";
+        gridElement.className = "grid";
+        
+        // Создаем 16 ячеек
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                
+                // Создаем контейнер для плитки внутри ячейки
+                const tileContainer = document.createElement("div");
+                tileContainer.className = "tile-container";
+                cell.appendChild(tileContainer);
+                
+                gridElement.appendChild(cell);
+            }
         }
+        
+        gameContainer.appendChild(gridElement);
     }
     
-    window.addEventListener('resize', updateMobileControls);
-    updateMobileControls();
+    loadGameState();
     
     console.log("Игра 2048 успешно загружена! Используйте стрелки для управления.");
 });
