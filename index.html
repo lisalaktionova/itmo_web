@@ -4,86 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2048</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #faf8ef;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            color: #776e65;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin: 0;
-            color: #776e65;
-        }
-        
-        #score-container {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin: 10px 0;
-            background: #bbada0;
-            padding: 10px 20px;
-            border-radius: 6px;
-            color: white;
-        }
-        
-        #game-container {
-            margin: 20px 0;
-        }
-        
-        /* Контейнер сетки получит стили из JS */
-        #grid {
-            /* Стили будут установлены динамически */
-        }
-        
-        #controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            background: #8f7a66;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        button:hover {
-            background: #7c6a5a;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>2048</h1>
-    
-    <div id="score-container">Очки: <span id="score">0</span></div>
-    
-    <div id="game-container">
-        <!-- Контейнер для сетки 4x4 -->
-        <div id="grid"></div>
+    <div class="container">
+        <header>
+            <h1>2048</h1>
+            <div class="score-container">
+                Очки: <span id="score">0</span>
+            </div>
+        </header>
+
+        <main>
+            <div id="game-container">
+                <div id="grid"></div>
+            </div>
+
+            <!-- Виртуальные кнопки управления для мобильных -->
+            <div id="mobile-controls" class="mobile-controls">
+                <button id="up-btn" class="control-btn">↑</button>
+                <button id="left-btn" class="control-btn">←</button>
+                <button id="down-btn" class="control-btn">↓</button>
+                <button id="right-btn" class="control-btn">→</button>
+            </div>
+
+            <div class="controls">
+                <button id="undo-btn">Отмена хода</button>
+                <button id="restart-btn">Начать заново</button>
+                <button id="leaders-btn">Таблица лидеров</button>
+            </div>
+        </main>
+
+        <!-- Модальное окно окончания игры -->
+        <div id="game-over-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Игра окончена!</h2>
+                <p id="game-over-text">Ваш счет: <span id="final-score">0</span></p>
+                <input type="text" id="username" placeholder="Введите ваше имя">
+                <div class="modal-buttons">
+                    <button id="save-score-btn">Сохранить результат</button>
+                    <button id="resume-btn">Начать новую игру</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно таблицы лидеров -->
+        <div id="leaderboard-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Таблица лидеров</h2>
+                <table id="leaderboard-table">
+                    <!-- Таблица будет заполняться JavaScript -->
+                </table>
+                <div class="modal-buttons">
+                    <button id="close-leaders-btn">Закрыть</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="instructions">
+            <p><strong>Управление:</strong> используйте стрелки на клавиатуре или свайпы на мобильном устройстве</p>
+            <p><strong>Цель игры:</strong> соединяйте одинаковые числа, чтобы получить плитку 2048!</p>
+        </footer>
     </div>
-    
-    <div id="controls">
-        <button id="undo-btn">Отмена</button>
-        <button id="restart-btn">Начать заново</button>
-        <button id="leaders-btn">Лидеры</button>
-    </div>
-    
-    <!-- Пока без модальных окон для простоты -->
-    
+
     <script src="script.js"></script>
 </body>
 </html>
