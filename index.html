@@ -16,13 +16,13 @@
             text-align: center;
             color: #776e65;
         }
-
+        
         h1 {
             font-size: 2.5em;
             margin: 0;
             color: #776e65;
         }
-
+        
         #score-container {
             font-size: 1.2em;
             font-weight: bold;
@@ -32,36 +32,16 @@
             border-radius: 6px;
             color: white;
         }
-
+        
         #game-container {
-            width: 320px;
-            max-width: 90vw;
             margin: 20px 0;
         }
-
+        
+        /* Контейнер сетки получит стили из JS */
         #grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            background: #bbada0;
-            border-radius: 6px;
-            padding: 10px;
-            box-sizing: border-box;
-            min-height: 320px;
+            /* Стили будут установлены динамически */
         }
-
-        .tile {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            border-radius: 4px;
-            background: #cdc1b4;
-            aspect-ratio: 1 / 1;
-            color: #776e65;
-        }
-
+        
         #controls {
             display: flex;
             justify-content: center;
@@ -69,7 +49,7 @@
             margin-top: 10px;
             flex-wrap: wrap;
         }
-
+        
         button {
             padding: 10px 15px;
             border: none;
@@ -80,105 +60,30 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-
+        
         button:hover {
             background: #7c6a5a;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal.hidden { display: none; }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            min-width: 260px;
-            text-align: center;
-        }
-
-        input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 200px;
-            max-width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        @media (max-width: 480px) {
-            #game-container {
-                width: 280px;
-            }
-            
-            .tile {
-                font-size: 18px;
-            }
         }
     </style>
 </head>
 <body>
     <h1>2048</h1>
-
+    
     <div id="score-container">Очки: <span id="score">0</span></div>
-
+    
     <div id="game-container">
+        <!-- Контейнер для сетки 4x4 -->
         <div id="grid"></div>
     </div>
-
+    
     <div id="controls">
         <button id="undo-btn">Отмена</button>
         <button id="restart-btn">Начать заново</button>
         <button id="leaders-btn">Лидеры</button>
     </div>
-
-    <!-- Модалка конца игры -->
-    <div id="game-over-modal" class="modal hidden">
-        <div class="modal-content">
-            <p id="game-over-text">Игра окончена!</p>
-            <input id="username" placeholder="Ваше имя">
-            <div style="margin-top:10px;">
-                <button id="save-score-btn">Сохранить результат</button>
-                <button id="resume-btn">Начать заново</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Лидерборд -->
-    <div id="leaderboard-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Таблица лидеров</h2>
-            <table id="leaderboard-table"></table>
-            <div style="margin-top:10px;">
-                <button id="close-leaders-btn">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
+    
+    <!-- Пока без модальных окон для простоты -->
+    
     <script src="script.js"></script>
 </body>
 </html>
