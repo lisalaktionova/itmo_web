@@ -33,6 +33,97 @@ h1 {
     position: relative;
 }
 
+/* Добавьте к существующим стилям */
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    background: #bbada0;
+    border-radius: 6px;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative; /* Важно для абсолютного позиционирования */
+}
+
+.tile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 4px;
+    background: #cdc1b4;
+    aspect-ratio: 1 / 1;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    color: #776e65;
+    position: relative;
+    z-index: 1;
+}
+
+.tile-empty {
+    background: rgba(205, 193, 180, 0.35);
+}
+
+.tile-moving {
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.tile-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.tile-new {
+    animation: appear 0.3s ease;
+}
+
+.tile-merged {
+    animation: pop 0.3s ease;
+    z-index: 10;
+}
+
+@keyframes appear {
+    0% { 
+        transform: scale(0); 
+        opacity: 0;
+    }
+    70% { 
+        transform: scale(1.1); 
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(1); 
+        opacity: 1;
+    }
+}
+
+@keyframes pop {
+    0% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.2); 
+    }
+    100% { 
+        transform: scale(1); 
+    }
+}
+
+/* Цвета плиток (оставляем как были) */
+.tile-2 { background: #eee4da; }
+.tile-4 { background: #ede0c8; }
+.tile-8 { background: #f2b179; color: #f9f6f2; }
+.tile-16 { background: #f59563; color: #f9f6f2; }
+.tile-32 { background: #f67c5f; color: #f9f6f2; }
+.tile-64 { background: #f65e3b; color: #f9f6f2; }
+.tile-128 { background: #edcf72; color: #f9f6f2; font-size: 20px; }
+.tile-256 { background: #edcc61; color: #f9f6f2; font-size: 20px; }
+.tile-512 { background: #edc850; color: #f9f6f2; font-size: 20px; }
+.tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 18px; }
+.tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 18px; }
+
 #grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
