@@ -1,171 +1,104 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Arial', sans-serif;
+    margin: 0;
     background: #faf8ef;
-    color: #776e65;
-    min-height: 100vh;
-    padding: 20px;
+    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
 }
 
 .container {
-    width: 100%;
-    max-width: 500px;
-}
-
-/* HEADER */
-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
 }
 
-h1 {
-    font-size: 3em;
-    color: #776e65;
-}
-
-.score-container {
+#score-container {
     background: #bbada0;
+    color: #fff;
     padding: 10px 20px;
     border-radius: 6px;
-    color: white;
-    font-size: 1.3em;
-    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-/* GAME CONTAINER */
 #game-container {
-    width: 100%;
-    margin: 20px 0;
+    width: 320px;
 }
 
-/* GRID - САМОЕ ВАЖНОЕ! */
 #grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
     gap: 10px;
     background: #bbada0;
-    border-radius: 6px;
     padding: 10px;
-    
-    /* Фиксируем размер сетки */
-    width: 100%;
-    height: 500px; /* Фиксированная высота */
-    max-height: 90vw; /* Для мобильных */
+    border-radius: 6px;
 }
 
-/* TILES */
 .tile {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    font-size: 35px !important;
-    font-weight: bold !important;
-    border-radius: 3px !important;
-    background: rgba(238, 228, 218, 0.35) !important;
-    
-    /* Гарантируем, что плитки видны */
-    min-height: 0 !important;
-    min-width: 0 !important;
-    overflow: hidden !important;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: bold;
+    border-radius: 4px;
+    background: #cdc1b4;
+    transition: transform .2s ease;
 }
 
-/* Цвета плиток - убедитесь, что эти стили применяются */
-.tile-2 { 
-    background: #eee4da !important; 
-    color: #776e65 !important;
-}
-.tile-4 { 
-    background: #ede0c8 !important; 
-    color: #776e65 !important;
-}
-.tile-8 { 
-    background: #f2b179 !important; 
-    color: #f9f6f2 !important;
-}
-.tile-16 { 
-    background: #f59563 !important; 
-    color: #f9f6f2 !important;
-}
-.tile-32 { 
-    background: #f67c5f !important; 
-    color: #f9f6f2 !important;
-}
-.tile-64 { 
-    background: #f65e3b !important; 
-    color: #f9f6f2 !important;
-}
-.tile-128 { 
-    background: #edcf72 !important; 
-    color: #f9f6f2 !important;
-}
-.tile-256 { 
-    background: #edcc61 !important; 
-    color: #f9f6f2 !important;
-}
-.tile-512 { 
-    background: #edc850 !important; 
-    color: #f9f6f2 !important;
-}
-.tile-1024 { 
-    background: #edc53f !important; 
-    color: #f9f6f2 !important;
-}
-.tile-2048 { 
-    background: #edc22e !important; 
-    color: #f9f6f2 !important;
+.tile-new {
+    animation: appear .3s ease;
 }
 
-/* КНОПКИ УПРАВЛЕНИЯ */
-.controls {
+.tile-merged {
+    animation: pop .3s ease;
+}
+
+@keyframes appear {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* colors */
+.tile-2 { background:#eee4da; }
+.tile-4 { background:#ede0c8; }
+.tile-8 { background:#f2b179; color:#fff; }
+.tile-16 { background:#f59563; color:#fff; }
+.tile-32 { background:#f67c5f; color:#fff; }
+.tile-64 { background:#f65e3b; color:#fff; }
+.tile-128 { background:#edcf72; color:#fff; }
+.tile-256 { background:#edcc61; color:#fff; }
+.tile-512 { background:#edc850; color:#fff; }
+.tile-1024 { background:#edc53f; color:#fff; }
+.tile-2048 { background:#edc22e; color:#fff; }
+
+#controls {
+    margin-top: 10px;
     display: flex;
     gap: 10px;
-    margin: 20px 0;
-    justify-content: center;
-    flex-wrap: wrap;
 }
 
 button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
     background: #8f7a66;
-    color: white;
-    font-weight: bold;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
     cursor: pointer;
-    min-width: 150px;
 }
 
-/* Виртуальные кнопки для мобильных */
 .mobile-controls {
     display: none;
-    grid-template-areas: 
+    grid-template-areas:
         ". up ."
         "left down right";
     gap: 10px;
-    margin: 20px 0;
-    justify-content: center;
-}
-
-.control-btn {
-    width: 70px;
-    height: 70px;
-    font-size: 24px;
-    border: none;
-    border-radius: 8px;
-    background: #8f7a66;
-    color: white;
-    cursor: pointer;
+    margin-top: 10px;
 }
 
 #up-btn { grid-area: up; }
@@ -173,39 +106,28 @@ button {
 #left-btn { grid-area: left; }
 #right-btn { grid-area: right; }
 
-/* АДАПТИВНОСТЬ */
-@media (max-width: 520px) {
-    #grid {
-        height: 400px;
-        gap: 8px;
-        padding: 8px;
-    }
-    
-    .tile {
-        font-size: 28px !important;
-    }
-    
-    header {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .controls {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .mobile-controls {
-        display: grid;
-    }
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-@media (max-width: 400px) {
-    #grid {
-        height: 350px;
-    }
-    
-    .tile {
-        font-size: 24px !important;
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: grid;
     }
 }
