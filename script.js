@@ -4,6 +4,7 @@ let score = 0;
 let previousGrid = null;
 let previousScore = 0;
 let gameOver = false;
+let tiles = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM loaded");
@@ -20,6 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const resumeBtn = document.getElementById("resume-btn");
     const leaderboardTable = document.getElementById("leaderboard-table");
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
+    const finalScoreSpan = document.getElementById("final-score");
+    
+    // Мобильные кнопки управления
+    const upBtn = document.getElementById("up-btn");
+    const downBtn = document.getElementById("down-btn");
+    const leftBtn = document.getElementById("left-btn");
+    const rightBtn = document.getElementById("right-btn");
     
     // Проверяем, что элементы найдены
     if (!gridContainer) {
@@ -41,10 +49,25 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.push(Array(GRID_SIZE).fill(0));
         }
         
+        tiles = [];
         score = 0;
         previousGrid = null;
         previousScore = 0;
         gameOver = false;
+        
+        // Очищаем контейнер
+        gridContainer.innerHTML = '';
+        
+        // Создаем пустые клетки
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                gridContainer.appendChild(cell);
+            }
+        }
         
         // Добавляем 2 начальные плитки
         addRandomTile();
@@ -66,39 +89,125 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Игра инициализирована");
     }
     
+    function getPosition(row, col) {
+        const cellSize = (gridContainer.clientWidth - 50) / GRID_SIZE;
+        const gap = 10;
+        return {
+            x: col * (cellSize + gap) + gap / 2,
+            y: row * (cellSize + gap) + gap / 2
+        };
+    }
+    
     function renderGrid() {
         console.log("Рендеринг сетки...");
         
-        // Очищаем контейнер БЕЗ innerHTML
-        while (gridContainer.firstChild) {
-            gridContainer.removeChild(gridContainer.firstChild);
-        }
+        // Удаляем старые плитки
+        tiles.forEach(tile => {
+            if (tile.element && tile.element.parentNode) {
+                tile.element.remove();
+            }
+        });
         
-        // Создаем 16 плиток
+        tiles = [];
+        
+        // Создаем новые плитки
         for (let r = 0; r < GRID_SIZE; r++) {
             for (let c = 0; c < GRID_SIZE; c++) {
-                const tile = document.createElement("div");
-                tile.className = "tile";
-                
                 const value = grid[r][c];
                 if (value !== 0) {
-                    const textNode = document.createTextNode(value.toString());
-                    tile.appendChild(textNode);
-                    tile.classList.add(`tile-${value}`);
+                    createTile(r, c, value);
                 }
-                
-                gridContainer.appendChild(tile);
             }
         }
         
         // Обновляем счет
         if (scoreSpan) {
-            const scoreText = document.createTextNode(score.toString());
-            scoreSpan.innerHTML = '';
-            scoreSpan.appendChild(scoreText);
+            scoreSpan.textContent = score;
         }
         
-        console.log("Сетка отрендерена. Количество плиток:", gridContainer.children.length);
+        console.log("Сетка отрендерена. Количество плиток:", tiles.length);
+    }
+    
+    function createTile(row, col, value) {
+        const tile = {
+            row,
+            col,
+            value,
+            merged: false,
+            new: true,
+            element: null
+        };
+        
+        const element = document.createElement("div");
+        element.className = `tile tile-${value}`;
+        if (value > 2048) {
+            element.classList.add(`tile-2048`);
+        }
+        
+        element.textContent = value;
+        
+        const pos = getPosition(row, col);
+        element.style.left = `${pos.x}px`;
+        element.style.top = `${pos.y}px`;
+        
+        element.dataset.row = row;
+        element.dataset.col = col;
+        element.dataset.value = value;
+        
+        gridContainer.appendChild(element);
+        
+        tile.element = element;
+        tiles.push(tile);
+        
+        // Анимация появления
+        setTimeout(() => {
+            element.classList.add('new');
+            setTimeout(() => {
+                element.classList.remove('new');
+                tile.new = false;
+            }, 300);
+        }, 10);
+        
+        return tile;
+    }
+    
+    function animateTileMovement(tile, newRow, newCol) {
+        if (!tile.element) return;
+        
+        const pos = getPosition(newRow, newCol);
+        tile.element.style.left = `${pos.x}px`;
+        tile.element.style.top = `${pos.y}px`;
+        
+        tile.element.classList.add('moving');
+        setTimeout(() => {
+            if (tile.element) {
+                tile.element.classList.remove('moving');
+            }
+        }, 150);
+        
+        tile.row = newRow;
+        tile.col = newCol;
+    }
+    
+    function animateMerge(tile, removedTile) {
+        if (!tile.element) return;
+        
+        tile.element.classList.add('merged');
+        tile.element.textContent = tile.value;
+        tile.element.className = `tile tile-${tile.value}`;
+        if (tile.value > 2048) {
+            tile.element.classList.add(`tile-2048`);
+        }
+        
+        setTimeout(() => {
+            if (tile.element) {
+                tile.element.classList.remove('merged');
+            }
+        }, 300);
+        
+        if (removedTile && removedTile.element) {
+            removedTile.element.remove();
+        }
     }
     
     function addRandomTile() {
@@ -118,17 +227,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const { r, c } = emptyCells[randomIndex];
             
             // С вероятностью 90% ставим 2, с 10% - 4
-            grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+            const value = Math.random() < 0.9 ? 2 : 4;
+            grid[r][c] = value;
+            
+            createTile(r, c, value);
             
             return true;
         }
         
         return false;
-    }
-    
-    function addStartTiles() {
-        addRandomTile();
-        addRandomTile();
     }
     
     function saveState() {
@@ -274,16 +381,26 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (moved) {
             console.log("Ход выполнен, добавляем новую плитку");
-            addRandomTile();
+            // Сначала обновляем отображение
             renderGrid();
+            // Затем добавляем новую плитку
+            setTimeout(() => {
+                addRandomTile();
+            }, 150);
             
             if (!canMove()) {
                 gameOver = true;
                 console.log("Игра окончена!");
+                if (finalScoreSpan) {
+                    finalScoreSpan.textContent = score;
+                }
                 setTimeout(() => {
                     gameOverModal.classList.remove("hidden");
                 }, 300);
             }
+            
+            // Сохраняем состояние игры
+            saveGameState();
         } else {
             console.log("Нет возможных ходов в этом направлении");
         }
@@ -314,6 +431,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
     
+    // Обработчики для мобильных кнопок
+    upBtn.addEventListener('click', () => {
+        console.log("Кнопка ВВЕРХ");
+        move("up");
+    });
+    
+    downBtn.addEventListener('click', () => {
+        console.log("Кнопка ВНИЗ");
+        move("down");
+    });
+    
+    leftBtn.addEventListener('click', () => {
+        console.log("Кнопка ВЛЕВО");
+        move("left");
+    });
+    
+    rightBtn.addEventListener('click', () => {
+        console.log("Кнопка ВПРАВО");
+        move("right");
+    });
+    
     // Лидерборд и другие обработчики
     closeLeadersBtn.addEventListener('click', () => {
         leaderboardModal.classList.add("hidden");
@@ -336,14 +474,21 @@ document.addEventListener("DOMContentLoaded", () => {
             date: new Date().toISOString() 
         });
         
+        // Сортируем по убыванию очков
         leaders.sort((a, b) => (parseInt(b.score) || 0) - (parseInt(a.score) || 0));
-        localStorage.setItem("2048_leaders", JSON.stringify(leaders.slice(0, 10)));
+        
+        // Берем только топ-10
+        const top10 = leaders.slice(0, 10);
+        localStorage.setItem("2048_leaders", JSON.stringify(top10));
         
         const gameOverText = document.getElementById("game-over-text");
         gameOverText.textContent = "Ваш рекорд сохранен!";
         
         usernameInput.style.display = "none";
         saveScoreBtn.style.display = "none";
+        
+        // Обновляем таблицу лидеров
+        renderLeadersList();
     });
     
     resumeBtn.addEventListener('click', () => {
@@ -356,6 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     function renderLeadersList() {
+        // Очищаем таблицу
         while (leaderboardTable.firstChild) {
             leaderboardTable.removeChild(leaderboardTable.firstChild);
         }
@@ -364,19 +510,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const headerRow = document.createElement("tr");
         
         const placeHeader = document.createElement("th");
-        placeHeader.appendChild(document.createTextNode("Место"));
+        placeHeader.textContent = "Место";
         headerRow.appendChild(placeHeader);
         
         const nameHeader = document.createElement("th");
-        nameHeader.appendChild(document.createTextNode("Имя"));
+        nameHeader.textContent = "Имя";
         headerRow.appendChild(nameHeader);
         
         const scoreHeader = document.createElement("th");
-        scoreHeader.appendChild(document.createTextNode("Очки"));
+        scoreHeader.textContent = "Очки";
         headerRow.appendChild(scoreHeader);
         
         const dateHeader = document.createElement("th");
-        dateHeader.appendChild(document.createTextNode("Дата"));
+        dateHeader.textContent = "Дата";
         headerRow.appendChild(dateHeader);
         
         leaderboardTable.appendChild(headerRow);
@@ -387,7 +533,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
             cell.colSpan = 4;
-            cell.appendChild(document.createTextNode("Пока нет рекордов"));
+            cell.textContent = "Пока нет рекордов";
+            cell.style.textAlign = "center";
+            cell.style.padding = "30px";
             row.appendChild(cell);
             leaderboardTable.appendChild(row);
             return;
@@ -397,36 +545,44 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = document.createElement("tr");
             
             const placeCell = document.createElement("td");
-            placeCell.appendChild(document.createTextNode((index + 1).toString()));
+            placeCell.textContent = index + 1;
             row.appendChild(placeCell);
             
             const nameCell = document.createElement("td");
-            nameCell.appendChild(document.createTextNode(leader.name));
+            nameCell.textContent = leader.name;
             row.appendChild(nameCell);
             
             const scoreCell = document.createElement("td");
-            scoreCell.appendChild(document.createTextNode((parseInt(leader.score) || 0).toString()));
+            scoreCell.textContent = leader.score;
             row.appendChild(scoreCell);
             
             const dateCell = document.createElement("td");
-            dateCell.appendChild(document.createTextNode(new Date(leader.date).toLocaleDateString('ru-RU')));
+            dateCell.textContent = new Date(leader.date).toLocaleDateString('ru-RU');
             row.appendChild(dateCell);
             
             leaderboardTable.appendChild(row);
         });
     }
     
-    // Свайпы для мобильных (опционально)
+    // Свайпы для мобильных
     let startX = 0, startY = 0;
+    let isSwiping = false;
     
     gridContainer.addEventListener("touchstart", e => {
         if (gameOver) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+        isSwiping = true;
     }, { passive: true });
     
+    gridContainer.addEventListener("touchmove", e => {
+        if (!isSwiping) return;
+        e.preventDefault();
+    }, { passive: false });
+    
     gridContainer.addEventListener("touchend", e => {
-        if (gameOver) return;
+        if (!isSwiping || gameOver) return;
+        isSwiping = false;
         
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
@@ -442,6 +598,18 @@ document.addEventListener("DOMContentLoaded", () => {
             else move("up");
         }
     });
+    
+    // Сохранение состояния игры
+    function saveGameState() {
+        const state = {
+            grid,
+            score,
+            previousGrid,
+            previousScore,
+            gameOver
+        };
+        localStorage.setItem('2048_gameState', JSON.stringify(state));
+    }
     
     // Загрузка сохраненной игры
     function loadGameState() {
@@ -465,13 +633,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderGrid();
                 
                 if (gameOver) {
+                    if (finalScoreSpan) {
+                        finalScoreSpan.textContent = score;
+                    }
                     setTimeout(() => {
                         gameOverModal.classList.remove("hidden");
                     }, 100);
                 }
                 
             } catch (e) {
-                console.log('Ошибка загрузки сохраненной игры, начинаем новую');
+                console.log('Ошибка загрузки сохраненной игры, начинаем новую:', e);
                 initGame();
             }
         } else {
