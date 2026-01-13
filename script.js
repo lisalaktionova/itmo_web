@@ -8,8 +8,9 @@ let gameOver = false;
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM loaded");
     
+    // Получаем элементы DOM
     const scoreSpan = document.getElementById("score");
-    const gameContainer = document.getElementById("game-container");
+    const gridContainer = document.getElementById("grid");
     const undoBtn = document.getElementById("undo-btn");
     const restartBtn = document.getElementById("restart-btn");
     const leadersBtn = document.getElementById("leaders-btn");
@@ -18,21 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const usernameInput = document.getElementById("username");
     const saveScoreBtn = document.getElementById("save-score-btn");
     const resumeBtn = document.getElementById("resume-btn");
+    const finalScoreSpan = document.getElementById("final-score");
     const leaderboardTable = document.getElementById("leaderboard-table");
     const closeLeadersBtn = document.getElementById("close-leaders-btn");
-    const finalScoreSpan = document.getElementById("final-score");
     
-    // Мобильные кнопки управления
+    // Виртуальные кнопки управления
     const upBtn = document.getElementById("up-btn");
     const downBtn = document.getElementById("down-btn");
     const leftBtn = document.getElementById("left-btn");
     const rightBtn = document.getElementById("right-btn");
-    
-    // Проверяем, что элементы найдены
-    if (!gameContainer) {
-        console.error("Элемент #game-container не найден!");
-        return;
-    }
     
     // Инициализация игры
     initGame();
@@ -51,36 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
         previousScore = 0;
         gameOver = false;
         
-        // Очищаем контейнер
-        gameContainer.innerHTML = '';
-        
-        // Создаем сетку 4x4
-        const gridElement = document.createElement("div");
-        gridElement.id = "grid";
-        gridElement.className = "grid";
-        
-        // Создаем 16 ячеек
-        for (let r = 0; r < GRID_SIZE; r++) {
-            for (let c = 0; c < GRID_SIZE; c++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.dataset.row = r;
-                cell.dataset.col = c;
-                
-                // Создаем контейнер для плитки внутри ячейки
-                const tileContainer = document.createElement("div");
-                tileContainer.className = "tile-container";
-                cell.appendChild(tileContainer);
-                
-                gridElement.appendChild(cell);
-            }
-        }
-        
-        gameContainer.appendChild(gridElement);
-        
-        // Добавляем 2 начальные плитки
+        // Добавляем 2-3 начальные плитки
         addRandomTile();
         addRandomTile();
+        if (Math.random() > 0.5) addRandomTile();
         
         // Рендерим сетку
         renderGrid();
@@ -92,9 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
         gameOverModal.classList.add("hidden");
         leaderboardModal.classList.add("hidden");
         
-        const gameOverText = document.getElementById("game-over-text");
-        gameOverText.textContent = "Игра окончена!";
-        
         // Сохраняем начальное состояние
         saveGameState();
         
@@ -104,48 +70,31 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderGrid() {
         console.log("Рендеринг сетки...");
         
+        // Очищаем контейнер
+        gridContainer.innerHTML = '';
+        
+        // Создаем плитки с анимациями
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const tile = document.createElement("div");
+                tile.className = "tile";
+                
+                const value = grid[r][c];
+                if (value !== 0) {
+                    tile.textContent = value;
+                    tile.classList.add(`tile-${value}`);
+                }
+                
+                gridContainer.appendChild(tile);
+            }
+        }
+        
         // Обновляем счет
         if (scoreSpan) {
             scoreSpan.textContent = score;
         }
         
-        // Очищаем все плитки
-        document.querySelectorAll('.tile').forEach(tile => tile.remove());
-        
-        // Создаем плитки на основе grid
-        for (let r = 0; r < GRID_SIZE; r++) {
-            for (let c = 0; c < GRID_SIZE; c++) {
-                const value = grid[r][c];
-                if (value !== 0) {
-                    createTile(r, c, value);
-                }
-            }
-        }
-    }
-    
-    function createTile(row, col, value) {
-        // Находим ячейку
-        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-        if (!cell) return;
-        
-        const tileContainer = cell.querySelector('.tile-container');
-        if (!tileContainer) return;
-        
-        // Создаем плитку
-        const tile = document.createElement("div");
-        tile.className = `tile tile-${value}`;
-        tile.textContent = value;
-        tile.dataset.value = value;
-        
-        // Добавляем класс для анимации появления
-        tile.classList.add('new');
-        
-        tileContainer.appendChild(tile);
-        
-        // Убираем класс анимации после завершения
-        setTimeout(() => {
-            tile.classList.remove('new');
-        }, 300);
+        console.log("Сетка отрендерена");
     }
     
     function addRandomTile() {
@@ -165,8 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const { r, c } = emptyCells[randomIndex];
             
             // С вероятностью 90% ставим 2, с 10% - 4
-            const value = Math.random() < 0.9 ? 2 : 4;
-            grid[r][c] = value;
+            grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+            
+            // Добавляем класс для анимации появления
+            const tileIndex = r * GRID_SIZE + c;
+            setTimeout(() => {
+                const tile = gridContainer.children[tileIndex];
+                if (tile) {
+                    tile.classList.add('new');
+                    setTimeout(() => tile.classList.remove('new'), 300);
+                }
+            }, 100);
             
             return true;
         }
@@ -181,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
+    // Обработчик кнопки "Отмена хода"
     undoBtn.addEventListener('click', () => {
         if (previousGrid && !gameOver) {
             grid = JSON.parse(JSON.stringify(previousGrid));
@@ -204,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
                 const mergedValue = filtered[i] * 2;
                 result.push(mergedValue);
-                scoreAdd += mergedValue; // Добавляем значение объединенной плитки
+                scoreAdd += mergedValue;
                 i++; // Пропускаем следующую плитку
             } else {
                 result.push(filtered[i]);
@@ -220,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     function rotateGrid(times) {
-        // Вращаем сетку на 90 градусов по часовой стрелке * times
         for (let t = 0; t < times; t++) {
             let newGrid = [];
             for (let i = 0; i < GRID_SIZE; i++) {
@@ -236,64 +194,49 @@ document.addEventListener("DOMContentLoaded", () => {
     function performMove(direction) {
         const before = JSON.parse(JSON.stringify(grid));
         const beforeScore = score;
-        let moved = false;
-        let scoreAdd = 0;
         
         if (direction === "left") {
             for (let r = 0; r < GRID_SIZE; r++) {
                 const result = moveRowLeft(grid[r]);
-                if (!arraysEqual(grid[r], result.row)) {
-                    moved = true;
-                }
                 grid[r] = result.row;
-                scoreAdd += result.score;
+                score += result.score;
             }
         } else if (direction === "right") {
-            rotateGrid(2); // 180 градусов
+            rotateGrid(2);
             for (let r = 0; r < GRID_SIZE; r++) {
                 const result = moveRowLeft(grid[r]);
-                if (!arraysEqual(grid[r], result.row)) {
-                    moved = true;
-                }
                 grid[r] = result.row;
-                scoreAdd += result.score;
+                score += result.score;
             }
-            rotateGrid(2); // Возвращаем обратно
+            rotateGrid(2);
         } else if (direction === "up") {
-            rotateGrid(3); // 270 градусов = 90 градусов против часовой
+            rotateGrid(3); // 270 градусов против часовой = 90 по часовой
             for (let r = 0; r < GRID_SIZE; r++) {
                 const result = moveRowLeft(grid[r]);
-                if (!arraysEqual(grid[r], result.row)) {
-                    moved = true;
-                }
                 grid[r] = result.row;
-                scoreAdd += result.score;
+                score += result.score;
             }
-            rotateGrid(1); // Возвращаем обратно
+            rotateGrid(1); // Возвращаем обратно (90 против часовой)
         } else if (direction === "down") {
-            rotateGrid(1); // 90 градусов по часовой
+            rotateGrid(1); // 90 градусов против часовой
             for (let r = 0; r < GRID_SIZE; r++) {
                 const result = moveRowLeft(grid[r]);
-                if (!arraysEqual(grid[r], result.row)) {
-                    moved = true;
-                }
                 grid[r] = result.row;
-                scoreAdd += result.score;
+                score += result.score;
             }
             rotateGrid(3); // Возвращаем обратно
         }
         
-        score += scoreAdd;
+        score = Math.floor(score);
+        if (isNaN(score)) {
+            score = 0;
+        }
         
-        return moved || scoreAdd > 0;
+        return !gridsEqual(before, grid) || score !== beforeScore;
     }
     
-    function arraysEqual(a, b) {
-        if (a.length !== b.length) return false;
-        for (let i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) return false;
-        }
-        return true;
+    function gridsEqual(a, b) {
+        return JSON.stringify(a) === JSON.stringify(b);
     }
     
     function canMove() {
@@ -333,15 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (moved) {
             console.log("Ход выполнен, добавляем новую плитку");
-            // Добавляем новую плитку
             addRandomTile();
-            
-            // Обновляем отображение
             renderGrid();
             
             if (!canMove()) {
                 gameOver = true;
-                console.log("Игра окончена! Финальный счет:", score);
+                console.log("Игра окончена!");
                 if (finalScoreSpan) {
                     finalScoreSpan.textContent = score;
                 }
@@ -350,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 300);
             }
             
-            // Сохраняем состояние игры
             saveGameState();
         } else {
             console.log("Нет возможных ходов в этом направлении");
@@ -366,42 +305,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
             e.preventDefault();
             
-            if (e.key === "ArrowLeft") {
-                console.log("Стрелка влево");
-                move("left");
-            } else if (e.key === "ArrowRight") {
-                console.log("Стрелка вправо");
-                move("right");
-            } else if (e.key === "ArrowUp") {
-                console.log("Стрелка вверх");
-                move("up");
-            } else if (e.key === "ArrowDown") {
-                console.log("Стрелка вниз");
-                move("down");
-            }
+            if (e.key === "ArrowLeft") move("left");
+            else if (e.key === "ArrowRight") move("right");
+            else if (e.key === "ArrowUp") move("up");
+            else if (e.key === "ArrowDown") move("down");
         }
     });
     
-    // Обработчики для мобильных кнопок
-    upBtn.addEventListener('click', () => {
-        console.log("Кнопка ВВЕРХ");
-        move("up");
-    });
-    
-    downBtn.addEventListener('click', () => {
-        console.log("Кнопка ВНИЗ");
-        move("down");
-    });
-    
-    leftBtn.addEventListener('click', () => {
-        console.log("Кнопка ВЛЕВО");
-        move("left");
-    });
-    
-    rightBtn.addEventListener('click', () => {
-        console.log("Кнопка ВПРАВО");
-        move("right");
-    });
+    // Виртуальные кнопки управления
+    upBtn.addEventListener('click', () => move("up"));
+    downBtn.addEventListener('click', () => move("down"));
+    leftBtn.addEventListener('click', () => move("left"));
+    rightBtn.addEventListener('click', () => move("right"));
     
     // Лидерборд и другие обработчики
     closeLeadersBtn.addEventListener('click', () => {
@@ -417,29 +332,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const name = usernameInput.value.trim() || "Аноним";
         const leaders = JSON.parse(localStorage.getItem("2048_leaders") || "[]");
         
-        const numericScore = parseInt(score) || 0;
-        
         leaders.push({ 
             name, 
-            score: numericScore, 
+            score: score, 
             date: new Date().toISOString() 
         });
         
-        // Сортируем по убыванию очков
-        leaders.sort((a, b) => (parseInt(b.score) || 0) - (parseInt(a.score) || 0));
-        
-        // Берем только топ-10
-        const top10 = leaders.slice(0, 10);
-        localStorage.setItem("2048_leaders", JSON.stringify(top10));
+        // Сортируем по убыванию очков и оставляем топ-10
+        leaders.sort((a, b) => b.score - a.score);
+        const topLeaders = leaders.slice(0, 10);
+        localStorage.setItem("2048_leaders", JSON.stringify(topLeaders));
         
         const gameOverText = document.getElementById("game-over-text");
         gameOverText.textContent = "Ваш рекорд сохранен!";
         
         usernameInput.style.display = "none";
         saveScoreBtn.style.display = "none";
-        
-        // Обновляем таблицу лидеров
-        renderLeadersList();
     });
     
     resumeBtn.addEventListener('click', () => {
@@ -452,10 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     function renderLeadersList() {
-        // Очищаем таблицу
-        while (leaderboardTable.firstChild) {
-            leaderboardTable.removeChild(leaderboardTable.firstChild);
-        }
+        leaderboardTable.innerHTML = '';
         
         // Создаем заголовок таблицы
         const headerRow = document.createElement("tr");
@@ -485,8 +390,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const cell = document.createElement("td");
             cell.colSpan = 4;
             cell.textContent = "Пока нет рекордов";
-            cell.style.textAlign = "center";
-            cell.style.padding = "30px";
             row.appendChild(cell);
             leaderboardTable.appendChild(row);
             return;
@@ -516,42 +419,60 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // Свайпы для мобильных
-    let startX = 0, startY = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
     
-    gameContainer.addEventListener("touchstart", e => {
+    gridContainer.addEventListener('touchstart', e => {
         if (gameOver) return;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
     }, { passive: true });
     
-    gameContainer.addEventListener("touchend", e => {
+    gridContainer.addEventListener('touchend', e => {
         if (gameOver) return;
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+        handleSwipe();
+    }, { passive: true });
+    
+    function handleSwipe() {
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+        const minSwipeDistance = 50;
         
-        const endX = e.changedTouches[0].clientX;
-        const endY = e.changedTouches[0].clientY;
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const minSwipeDistance = 30;
-        
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipeDistance) {
-            if (dx > 0) move("right");
-            else move("left");
-        } else if (Math.abs(dy) > minSwipeDistance) {
-            if (dy > 0) move("down");
-            else move("up");
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // Горизонтальный свайп
+            if (Math.abs(dx) > minSwipeDistance) {
+                if (dx > 0) {
+                    move("right");
+                } else {
+                    move("left");
+                }
+            }
+        } else {
+            // Вертикальный свайп
+            if (Math.abs(dy) > minSwipeDistance) {
+                if (dy > 0) {
+                    move("down");
+                } else {
+                    move("up");
+                }
+            }
         }
-    });
+    }
     
     // Сохранение состояния игры
     function saveGameState() {
-        const state = {
-            grid,
-            score,
-            previousGrid,
-            previousScore,
-            gameOver
+        const gameState = {
+            grid: grid,
+            score: score,
+            previousGrid: previousGrid,
+            previousScore: previousScore,
+            gameOver: gameOver
         };
-        localStorage.setItem('2048_gameState', JSON.stringify(state));
+        localStorage.setItem('2048_gameState', JSON.stringify(gameState));
     }
     
     // Загрузка сохраненной игры
@@ -561,20 +482,16 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const state = JSON.parse(savedState);
                 grid = state.grid || [];
-                score = parseInt(state.score) || 0;
+                score = state.score || 0;
                 previousGrid = state.previousGrid;
-                previousScore = parseInt(state.previousScore) || 0;
+                previousScore = state.previousScore || 0;
                 gameOver = state.gameOver || false;
                 
                 if (!Array.isArray(grid) || grid.length !== GRID_SIZE) {
                     throw new Error('Invalid grid data');
                 }
                 
-                if (isNaN(score)) score = 0;
-                
                 console.log("Загружена сохраненная игра");
-                // Создаем сетку
-                initGridStructure();
                 renderGrid();
                 
                 if (gameOver) {
@@ -587,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
             } catch (e) {
-                console.log('Ошибка загрузки сохраненной игры, начинаем новую:', e);
+                console.log('Ошибка загрузки сохраненной игры, начинаем новую');
                 initGame();
             }
         } else {
@@ -595,36 +512,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
-    // Создание структуры сетки
-    function initGridStructure() {
-        gameContainer.innerHTML = '';
-        
-        // Создаем сетку 4x4
-        const gridElement = document.createElement("div");
-        gridElement.id = "grid";
-        gridElement.className = "grid";
-        
-        // Создаем 16 ячеек
-        for (let r = 0; r < GRID_SIZE; r++) {
-            for (let c = 0; c < GRID_SIZE; c++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.dataset.row = r;
-                cell.dataset.col = c;
-                
-                // Создаем контейнер для плитки внутри ячейки
-                const tileContainer = document.createElement("div");
-                tileContainer.className = "tile-container";
-                cell.appendChild(tileContainer);
-                
-                gridElement.appendChild(cell);
-            }
-        }
-        
-        gameContainer.appendChild(gridElement);
-    }
-    
     loadGameState();
+    
+    // Автосохранение при закрытии страницы
+    window.addEventListener('beforeunload', saveGameState);
     
     console.log("Игра 2048 успешно загружена! Используйте стрелки для управления.");
 });
