@@ -11,45 +11,22 @@
 <div class="container">
     <h1>2048</h1>
 
-    <div class="score-box">
+    <div class="score">
         Очки: <span id="score">0</span>
     </div>
 
-    <div id="game-container">
-        <div id="grid-background"></div>
-        <div id="tiles-layer"></div>
+    <!-- ИГРОВОЕ ПОЛЕ -->
+    <div id="game">
+        <!-- СТАТИЧЕСКАЯ СЕТКА -->
+        <div id="grid"></div>
+
+        <!-- СЛОЙ С ДВИЖУЩИМИСЯ ПЛИТКАМИ -->
+        <div id="tiles"></div>
     </div>
 
-    <div class="controls">
-        <button id="undo">Отмена</button>
-        <button id="restart">Заново</button>
-        <button id="leaders">Лидеры</button>
-    </div>
-
-    <div class="mobile-controls">
-        <button id="up">↑</button>
-        <button id="left">←</button>
-        <button id="down">↓</button>
-        <button id="right">→</button>
-    </div>
-</div>
-
-<!-- GAME OVER -->
-<div id="gameover" class="modal hidden">
-    <div class="modal-content">
-        <h2 id="gameover-text">Игра окончена</h2>
-        <input id="username" placeholder="Ваше имя">
-        <button id="save-score">Сохранить</button>
-        <button onclick="restartGame()">Новая игра</button>
-    </div>
-</div>
-
-<!-- LEADERS -->
-<div id="leaders-modal" class="modal hidden">
-    <div class="modal-content">
-        <h2>Таблица лидеров</h2>
-        <table id="leaders-table"></table>
-        <button onclick="closeLeaders()">Закрыть</button>
+    <div class="buttons">
+        <button id="undo">Undo</button>
+        <button id="restart">Restart</button>
     </div>
 </div>
 
