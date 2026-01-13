@@ -9,13 +9,17 @@ let gameOver = false;
 function initGame() {
     console.log("=== ИНИЦИАЛИЗАЦИЯ ИГРЫ ===");
     
-    // Проверяем, что элементы DOM существуют
+    // Проверяем элементы DOM
     const gridContainer = document.getElementById('grid');
     if (!gridContainer) {
         console.error("❌ Элемент #grid не найден!");
         return;
     }
     console.log("✅ Контейнер сетки найден");
+    
+    // Включаем режим отладки
+    document.body.classList.add('debug');
+    gridContainer.classList.add('debug');
     
     // Создаем пустую сетку 4x4
     grid = [];
@@ -37,6 +41,74 @@ function initGame() {
     
     console.log("✅ Игра инициализирована");
     console.log("Текущая сетка:", grid);
+}
+
+// Функция рендеринга сетки - ИСПРАВЛЕНА!
+function renderGrid() {
+    console.log("=== РЕНДЕРИНГ СЕТКИ ===");
+    
+    const gridContainer = document.getElementById('grid');
+    if (!gridContainer) {
+        console.error("Контейнер сетки не найден при рендеринге");
+        return;
+    }
+    
+    // Очищаем контейнер
+    gridContainer.innerHTML = '';
+    
+    // Визуализируем сетку 4x4
+    console.log(`Создаем сетку ${GRID_SIZE}x${GRID_SIZE}...`);
+    
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile debug'; // Добавляем класс отладки
+            
+            const value = grid[r][c];
+            
+            if (value !== 0) {
+                tile.textContent = value;
+                tile.classList.add(`tile-${value}`);
+                console.log(`Плитка [${r},${c}] = ${value}`);
+            } else {
+                // Пустая плитка
+                tile.textContent = '';
+                tile.style.background = 'rgba(205, 193, 180, 0.35)';
+                console.log(`Пустая плитка [${r},${c}]`);
+            }
+            
+            // Добавляем атрибут для отладки
+            tile.setAttribute('data-row', r);
+            tile.setAttribute('data-col', c);
+            tile.setAttribute('data-value', value);
+            
+            gridContainer.appendChild(tile);
+        }
+    }
+    
+    console.log(`✅ Сетка отрендерена. Создано плиток: ${gridContainer.children.length}`);
+    
+    // Проверяем, что создано 16 плиток
+    if (gridContainer.children.length !== 16) {
+        console.error(`❌ ОШИБКА: создано ${gridContainer.children.length} плиток вместо 16!`);
+        
+        // Принудительно создаем 16 плиток для отладки
+        console.log("Принудительное создание 16 плиток...");
+        gridContainer.innerHTML = '';
+        for (let i = 0; i < 16; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile debug';
+            tile.textContent = i % 5 === 0 ? (i + 2) : '';
+            tile.style.background = i % 5 === 0 ? '#eee4da' : 'rgba(205,193,180,0.35)';
+            tile.style.display = 'flex';
+            tile.style.justifyContent = 'center';
+            tile.style.alignItems = 'center';
+            tile.style.fontSize = '35px';
+            tile.style.fontWeight = 'bold';
+            tile.style.borderRadius = '3px';
+            gridContainer.appendChild(tile);
+        }
+    }
 }
 
 // Функция добавления случайной плитки
@@ -72,46 +144,7 @@ function addRandomTile() {
     return false;
 }
 
-// Функция рендеринга сетки
-function renderGrid() {
-    console.log("=== РЕНДЕРИНГ СЕТКИ ===");
-    
-    const gridContainer = document.getElementById('grid');
-    if (!gridContainer) {
-        console.error("Контейнер сетки не найден при рендеринге");
-        return;
-    }
-    
-    // Очищаем контейнер
-    gridContainer.innerHTML = '';
-    
-    // Создаем сетку 4x4
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            const tile = document.createElement('div');
-            tile.className = 'tile';
-            
-            const value = grid[r][c];
-            if (value !== 0) {
-                tile.textContent = value;
-                tile.classList.add(`tile-${value}`);
-                
-                // Добавляем анимацию для новых плиток
-                tile.classList.add('new');
-                setTimeout(() => {
-                    tile.classList.remove('new');
-                }, 200);
-            }
-            
-            gridContainer.appendChild(tile);
-        }
-    }
-    
-    console.log("✅ Сетка отрендерена");
-    console.log("Количество плиток в DOM:", gridContainer.children.length);
-}
-
-// Функция обновления счета
+// Обновление счета
 function updateScore() {
     const scoreElement = document.getElementById('score');
     if (scoreElement) {
@@ -119,7 +152,7 @@ function updateScore() {
     }
 }
 
-// Функция движения влево для одной строки
+// Движение строки влево
 function moveRowLeft(row) {
     // Убираем нули
     let filtered = row.filter(val => val !== 0);
@@ -132,7 +165,7 @@ function moveRowLeft(row) {
             const mergedValue = filtered[i] * 2;
             result.push(mergedValue);
             scoreAdd += mergedValue;
-            i++; // Пропускаем следующую плитку
+            i++;
         } else {
             result.push(filtered[i]);
         }
@@ -146,7 +179,7 @@ function moveRowLeft(row) {
     return { row: result, score: scoreAdd };
 }
 
-// Функция вращения сетки
+// Вращение сетки
 function rotateGrid(times) {
     for (let t = 0; t < times; t++) {
         const newGrid = [];
@@ -160,7 +193,7 @@ function rotateGrid(times) {
     }
 }
 
-// Основная функция движения
+// Выполнение движения
 function performMove(direction) {
     console.log(`Выполнение движения: ${direction}`);
     
@@ -175,7 +208,6 @@ function performMove(direction) {
                 score += result.score;
             }
             break;
-            
         case 'right':
             rotateGrid(2);
             for (let r = 0; r < GRID_SIZE; r++) {
@@ -185,7 +217,6 @@ function performMove(direction) {
             }
             rotateGrid(2);
             break;
-            
         case 'up':
             rotateGrid(3);
             for (let r = 0; r < GRID_SIZE; r++) {
@@ -195,7 +226,6 @@ function performMove(direction) {
             }
             rotateGrid(1);
             break;
-            
         case 'down':
             rotateGrid(1);
             for (let r = 0; r < GRID_SIZE; r++) {
@@ -220,32 +250,6 @@ function performMove(direction) {
     return moved;
 }
 
-// Функция проверки возможности движения
-function canMove() {
-    // Проверяем пустые клетки
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            if (grid[r][c] === 0) return true;
-        }
-    }
-    
-    // Проверяем возможные слияния по горизонтали
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE - 1; c++) {
-            if (grid[r][c] === grid[r][c + 1]) return true;
-        }
-    }
-    
-    // Проверяем возможные слияния по вертикали
-    for (let c = 0; c < GRID_SIZE; c++) {
-        for (let r = 0; r < GRID_SIZE - 1; r++) {
-            if (grid[r][c] === grid[r + 1][c]) return true;
-        }
-    }
-    
-    return false;
-}
-
 // Главная функция движения
 function move(direction) {
     if (gameOver) {
@@ -253,17 +257,14 @@ function move(direction) {
         return;
     }
     
-    // Сохраняем предыдущее состояние для отмены
+    // Сохраняем предыдущее состояние
     previousGrid = JSON.parse(JSON.stringify(grid));
     previousScore = score;
     
     const moved = performMove(direction);
     
     if (moved) {
-        // Добавляем новую плитку
         addRandomTile();
-        
-        // Рендерим обновленную сетку
         renderGrid();
         
         // Проверяем конец игры
@@ -273,6 +274,31 @@ function move(direction) {
             showGameOver();
         }
     }
+}
+
+// Проверка возможности движения
+function canMove() {
+    // Проверяем пустые клетки
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            if (grid[r][c] === 0) return true;
+        }
+    }
+    
+    // Проверяем возможные слияния
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE - 1; c++) {
+            if (grid[r][c] === grid[r][c + 1]) return true;
+        }
+    }
+    
+    for (let c = 0; c < GRID_SIZE; c++) {
+        for (let r = 0; r < GRID_SIZE - 1; r++) {
+            if (grid[r][c] === grid[r + 1][c]) return true;
+        }
+    }
+    
+    return false;
 }
 
 // Показ окна окончания игры
@@ -286,78 +312,47 @@ function showGameOver() {
     }
 }
 
-// Обработчики событий для виртуальных кнопок
+// Настройка виртуальных кнопок
 function setupVirtualButtons() {
-    const upBtn = document.getElementById('up-btn');
-    const downBtn = document.getElementById('down-btn');
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-    
-    if (upBtn) upBtn.addEventListener('click', () => move('up'));
-    if (downBtn) downBtn.addEventListener('click', () => move('down'));
-    if (leftBtn) leftBtn.addEventListener('click', () => move('left'));
-    if (rightBtn) rightBtn.addEventListener('click', () => move('right'));
+    document.getElementById('up-btn')?.addEventListener('click', () => move('up'));
+    document.getElementById('down-btn')?.addEventListener('click', () => move('down'));
+    document.getElementById('left-btn')?.addEventListener('click', () => move('left'));
+    document.getElementById('right-btn')?.addEventListener('click', () => move('right'));
 }
 
-// Обработчики для основных кнопок
+// Настройка основных кнопок
 function setupControlButtons() {
-    const undoBtn = document.getElementById('undo-btn');
-    const restartBtn = document.getElementById('restart-btn');
-    const leadersBtn = document.getElementById('leaders-btn');
-    const saveScoreBtn = document.getElementById('save-score-btn');
-    const resumeBtn = document.getElementById('resume-btn');
-    const closeLeadersBtn = document.getElementById('close-leaders-btn');
-    
     // Отмена хода
-    if (undoBtn) {
-        undoBtn.addEventListener('click', () => {
-            if (previousGrid && !gameOver) {
-                grid = JSON.parse(JSON.stringify(previousGrid));
-                score = previousScore;
-                updateScore();
-                renderGrid();
-                console.log("Отмена хода");
-            }
-        });
-    }
+    document.getElementById('undo-btn')?.addEventListener('click', () => {
+        if (previousGrid && !gameOver) {
+            grid = JSON.parse(JSON.stringify(previousGrid));
+            score = previousScore;
+            updateScore();
+            renderGrid();
+        }
+    });
     
     // Начать заново
-    if (restartBtn) {
-        restartBtn.addEventListener('click', () => {
-            console.log("Начало новой игры");
-            initGame();
-            gameOver = false;
-            const modal = document.getElementById('game-over-modal');
-            if (modal) modal.classList.add('hidden');
-        });
-    }
+    document.getElementById('restart-btn')?.addEventListener('click', () => {
+        initGame();
+        gameOver = false;
+        document.getElementById('game-over-modal')?.classList.add('hidden');
+    });
     
-    // Показать таблицу лидеров
-    if (leadersBtn) {
-        leadersBtn.addEventListener('click', showLeaderboard);
-    }
-    
-    // Закрыть таблицу лидеров
-    if (closeLeadersBtn) {
-        closeLeadersBtn.addEventListener('click', () => {
-            const modal = document.getElementById('leaderboard-modal');
-            if (modal) modal.classList.add('hidden');
-        });
-    }
+    // Таблица лидеров
+    document.getElementById('leaders-btn')?.addEventListener('click', showLeaderboard);
+    document.getElementById('close-leaders-btn')?.addEventListener('click', () => {
+        document.getElementById('leaderboard-modal')?.classList.add('hidden');
+    });
     
     // Сохранить результат
-    if (saveScoreBtn) {
-        saveScoreBtn.addEventListener('click', saveScore);
-    }
+    document.getElementById('save-score-btn')?.addEventListener('click', saveScore);
     
-    // Продолжить игру
-    if (resumeBtn) {
-        resumeBtn.addEventListener('click', () => {
-            initGame();
-            const modal = document.getElementById('game-over-modal');
-            if (modal) modal.classList.add('hidden');
-        });
-    }
+    // Новая игра
+    document.getElementById('resume-btn')?.addEventListener('click', () => {
+        initGame();
+        document.getElementById('game-over-modal')?.classList.add('hidden');
+    });
 }
 
 // Сохранение результата
@@ -368,30 +363,22 @@ function saveScore() {
     if (!usernameInput || !gameOverText) return;
     
     const name = usernameInput.value.trim() || 'Аноним';
-    
-    // Получаем текущие рекорды
     const leaders = JSON.parse(localStorage.getItem('2048_leaders') || '[]');
     
-    // Добавляем новый результат
     leaders.push({
         name: name,
         score: score,
         date: new Date().toISOString()
     });
     
-    // Сортируем по убыванию и оставляем топ-10
     leaders.sort((a, b) => b.score - a.score);
     const topLeaders = leaders.slice(0, 10);
     
-    // Сохраняем
     localStorage.setItem('2048_leaders', JSON.stringify(topLeaders));
     
-    // Обновляем UI
     gameOverText.textContent = 'Ваш рекорд сохранен!';
     usernameInput.style.display = 'none';
     document.getElementById('save-score-btn').style.display = 'none';
-    
-    console.log(`Рекорд сохранен: ${name} - ${score} очков`);
 }
 
 // Показать таблицу лидеров
@@ -401,10 +388,7 @@ function showLeaderboard() {
     
     if (!modal || !table) return;
     
-    // Очищаем таблицу
     table.innerHTML = '';
-    
-    // Получаем рекорды
     const leaders = JSON.parse(localStorage.getItem('2048_leaders') || '[]');
     
     if (leaders.length === 0) {
@@ -412,12 +396,9 @@ function showLeaderboard() {
         const cell = document.createElement('td');
         cell.colSpan = 4;
         cell.textContent = 'Пока нет рекордов';
-        cell.style.textAlign = 'center';
-        cell.style.padding = '20px';
         row.appendChild(cell);
         table.appendChild(row);
     } else {
-        // Создаем заголовок
         const headerRow = document.createElement('tr');
         ['Место', 'Имя', 'Очки', 'Дата'].forEach(text => {
             const th = document.createElement('th');
@@ -426,56 +407,33 @@ function showLeaderboard() {
         });
         table.appendChild(headerRow);
         
-        // Добавляем строки с рекордами
         leaders.forEach((leader, index) => {
             const row = document.createElement('tr');
             
-            const placeCell = document.createElement('td');
-            placeCell.textContent = index + 1;
-            row.appendChild(placeCell);
-            
-            const nameCell = document.createElement('td');
-            nameCell.textContent = leader.name;
-            row.appendChild(nameCell);
-            
-            const scoreCell = document.createElement('td');
-            scoreCell.textContent = leader.score;
-            row.appendChild(scoreCell);
-            
-            const dateCell = document.createElement('td');
-            dateCell.textContent = new Date(leader.date).toLocaleDateString('ru-RU');
-            row.appendChild(dateCell);
+            [index + 1, leader.name, leader.score, 
+             new Date(leader.date).toLocaleDateString('ru-RU')].forEach(text => {
+                const td = document.createElement('td');
+                td.textContent = text;
+                row.appendChild(td);
+            });
             
             table.appendChild(row);
         });
     }
     
-    // Показываем модальное окно
     modal.classList.remove('hidden');
 }
 
-// Обработчик клавиатуры
+// Управление клавиатурой
 function setupKeyboardControls() {
     document.addEventListener('keydown', (e) => {
         if (gameOver) return;
         
         switch(e.key) {
-            case 'ArrowLeft':
-                e.preventDefault();
-                move('left');
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                move('right');
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                move('up');
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                move('down');
-                break;
+            case 'ArrowLeft': e.preventDefault(); move('left'); break;
+            case 'ArrowRight': e.preventDefault(); move('right'); break;
+            case 'ArrowUp': e.preventDefault(); move('up'); break;
+            case 'ArrowDown': e.preventDefault(); move('down'); break;
         }
     });
 }
@@ -483,18 +441,17 @@ function setupKeyboardControls() {
 // Свайпы для мобильных
 function setupSwipeControls() {
     let startX, startY;
-    
     const gridContainer = document.getElementById('grid');
+    
     if (!gridContainer) return;
     
     gridContainer.addEventListener('touchstart', (e) => {
-        if (gameOver) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
     });
     
     gridContainer.addEventListener('touchend', (e) => {
-        if (gameOver || !startX || !startY) return;
+        if (!startX || !startY || gameOver) return;
         
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
@@ -503,55 +460,41 @@ function setupSwipeControls() {
         const minSwipe = 30;
         
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipe) {
-            // Горизонтальный свайп
-            if (dx > 0) move('right');
-            else move('left');
+            dx > 0 ? move('right') : move('left');
         } else if (Math.abs(dy) > minSwipe) {
-            // Вертикальный свайп
-            if (dy > 0) move('down');
-            else move('up');
+            dy > 0 ? move('down') : move('up');
         }
-        
-        startX = null;
-        startY = null;
     });
 }
 
-// Основная функция инициализации при загрузке страницы
+// Загрузка игры
 document.addEventListener('DOMContentLoaded', () => {
     console.log("=== ЗАГРУЗКА ИГРЫ 2048 ===");
     
-    // Проверяем наличие всех необходимых элементов
-    const requiredElements = [
-        'grid', 'score', 'undo-btn', 'restart-btn', 'leaders-btn',
-        'game-over-modal', 'leaderboard-modal'
-    ];
-    
-    let allElementsFound = true;
-    requiredElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) {
-            console.error(`❌ Элемент #${id} не найден!`);
-            allElementsFound = false;
-        } else {
-            console.log(`✅ Элемент #${id} найден`);
-        }
+    // Проверяем элементы
+    const elements = ['grid', 'score', 'undo-btn', 'restart-btn'];
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        console.log(el ? `✅ #${id}` : `❌ #${id}`);
     });
     
-    if (!allElementsFound) {
-        console.error("Не все необходимые элементы найдены. Проверьте HTML.");
-        return;
-    }
-    
-    // Инициализируем игру
+    // Инициализация
     initGame();
     
-    // Настраиваем управление
+    // Настройка управления
     setupKeyboardControls();
     setupVirtualButtons();
     setupControlButtons();
     setupSwipeControls();
     
-    console.log("✅ Игра 2048 готова к использованию!");
-    console.log("Управление: стрелки на клавиатуре или свайпы на мобильном");
+    console.log("✅ Игра готова!");
+    
+    // Через 3 секунды убираем отладку
+    setTimeout(() => {
+        document.body.classList.remove('debug');
+        document.getElementById('grid')?.classList.remove('debug');
+        document.querySelectorAll('.tile.debug').forEach(tile => {
+            tile.classList.remove('debug');
+        });
+    }, 3000);
 });
