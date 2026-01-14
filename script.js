@@ -1,143 +1,143 @@
 const SIZE = 4;
-const layer = document.getElementById("tiles-layer");
+const gridEl = document.getElementById("grid");
+const tilesEl = document.getElementById("tiles");
 const scoreEl = document.getElementById("score");
 
+let grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
 let tiles = {};
-let grid = Array.from({length:4},()=>Array(4).fill(null));
 let score = 0;
-let prevState = null;
+let lastState = null;
 let idCounter = 0;
 
-/* background */
-const bg = document.getElementById("grid-background");
-for(let i=0;i<16;i++){
-    const d=document.createElement("div");
-    d.className="bg";
-    bg.appendChild(d);
+/* ===== СОЗДАНИЕ СЕТКИ ===== */
+for (let i = 0; i < SIZE * SIZE; i++) {
+    const cell = document.createElement("div");
+    cell.className = "grid-cell";
+    gridEl.appendChild(cell);
 }
 
-/* helpers */
-function pos(r,c){
-    return `translate(${c*25}%,${r*25}%)`;
+/* ===== ВСПОМОГАТЕЛЬНЫЕ ===== */
+function position(r, c) {
+    return `translate(${c * 25}%, ${r * 25}%)`;
 }
 
-function createTile(r,c,val){
-    const el=document.createElement("div");
-    el.className=`tile tile-${val}`;
-    el.textContent=val;
-    el.style.transform=pos(r,c);
-    layer.appendChild(el);
+/* ===== СОЗДАНИЕ ПЛИТКИ ===== */
+function createTile(r, c, value) {
+    const el = document.createElement("div");
+    el.className = `tile tile-${value}`;
+    el.textContent = value;
+    el.style.transform = position(r, c);
 
-    const id=idCounter++;
-    tiles[id]={id,r,c,val,el};
-    grid[r][c]=id;
+    tilesEl.appendChild(el);
+
+    const id = idCounter++;
+    tiles[id] = { id, r, c, value, el };
+    grid[r][c] = id;
 }
 
-function addRandom(){
-    const empty=[];
-    for(let r=0;r<4;r++)
-        for(let c=0;c<4;c++)
-            if(grid[r][c]===null) empty.push({r,c});
-    if(!empty.length) return;
-    const {r,c}=empty[Math.floor(Math.random()*empty.length)];
-    createTile(r,c,Math.random()<.9?2:4);
+/* ===== СЛУЧАЙНАЯ ПЛИТКА ===== */
+function addRandomTile() {
+    const empty = [];
+    for (let r = 0; r < SIZE; r++)
+        for (let c = 0; c < SIZE; c++)
+            if (grid[r][c] === null) empty.push({ r, c });
+
+    if (!empty.length) return;
+
+    const { r, c } = empty[Math.floor(Math.random() * empty.length)];
+    createTile(r, c, Math.random() < 0.9 ? 2 : 4);
 }
 
-function saveUndo(){
-    prevState={
+/* ===== UNDO ===== */
+function saveState() {
+    lastState = {
         grid: JSON.parse(JSON.stringify(grid)),
         score,
-        tiles: Object.values(tiles).map(t=>({...t}))
+        tiles: Object.values(tiles).map(t => ({ ...t }))
     };
 }
 
-function restoreUndo(){
-    if(!prevState) return;
-    layer.innerHTML="";
-    tiles={};
-    grid=prevState.grid;
-    score=prevState.score;
-    scoreEl.textContent=score;
+function undo() {
+    if (!lastState) return;
 
-    prevState.tiles.forEach(t=>{
-        createTile(t.r,t.c,t.val);
-    });
+    tilesEl.innerHTML = "";
+    tiles = {};
+    grid = lastState.grid;
+    score = lastState.score;
+    scoreEl.textContent = score;
+
+    lastState.tiles.forEach(t => createTile(t.r, t.c, t.value));
 }
 
-function move(dir){
-    saveUndo();
-    let moved=false;
+/* ===== ДВИЖЕНИЕ ===== */
+function move(direction) {
+    saveState();
+    let moved = false;
 
-    const order=[...Object.values(tiles)];
-    if(dir==="right") order.sort((a,b)=>b.c-a.c);
-    if(dir==="left") order.sort((a,b)=>a.c-b.c);
-    if(dir==="down") order.sort((a,b)=>b.r-a.r);
-    if(dir==="up") order.sort((a,b)=>a.r-b.r);
+    const list = Object.values(tiles);
 
-    order.forEach(t=>{
-        let r=t.r, c=t.c;
-        while(true){
-            let nr=r, nc=c;
-            if(dir==="left") nc--;
-            if(dir==="right") nc++;
-            if(dir==="up") nr--;
-            if(dir==="down") nr++;
+    if (direction === "left") list.sort((a, b) => a.c - b.c);
+    if (direction === "right") list.sort((a, b) => b.c - a.c);
+    if (direction === "up") list.sort((a, b) => a.r - b.r);
+    if (direction === "down") list.sort((a, b) => b.r - a.r);
 
-            if(nr<0||nr>3||nc<0||nc>3) break;
-            if(grid[nr][nc]===null){
-                grid[r][c]=null;
-                r=nr; c=nc;
-                grid[r][c]=t.id;
-                moved=true;
+    list.forEach(tile => {
+        let { r, c } = tile;
+
+        while (true) {
+            let nr = r, nc = c;
+            if (direction === "left") nc--;
+            if (direction === "right") nc++;
+            if (direction === "up") nr--;
+            if (direction === "down") nr++;
+
+            if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
+
+            if (grid[nr][nc] === null) {
+                grid[r][c] = null;
+                r = nr; c = nc;
+                grid[r][c] = tile.id;
+                moved = true;
             } else {
-                const other=tiles[grid[nr][nc]];
-                if(other.val===t.val){
-                    other.val*=2;
-                    other.el.textContent=other.val;
-                    other.el.className=`tile tile-${other.val} tile-merged`;
-                    score+=other.val;
-                    scoreEl.textContent=score;
+                const other = tiles[grid[nr][nc]];
+                if (other.value === tile.value) {
+                    other.value *= 2;
+                    other.el.textContent = other.value;
+                    other.el.className = `tile tile-${other.value} tile-merged`;
 
-                    t.el.remove();
-                    delete tiles[t.id];
-                    grid[r][c]=null;
-                    moved=true;
+                    score += other.value;
+                    scoreEl.textContent = score;
+
+                    tile.el.remove();
+                    delete tiles[tile.id];
+                    grid[r][c] = null;
+                    moved = true;
                 }
                 break;
             }
         }
-        t.r=r; t.c=c;
-        if(tiles[t.id]) t.el.style.transform=pos(r,c);
+
+        if (tiles[tile.id]) {
+            tile.r = r;
+            tile.c = c;
+            tile.el.style.transform = position(r, c);
+        }
     });
 
-    if(moved){
-        setTimeout(addRandom,200);
-        saveGame();
-    }
+    if (moved) setTimeout(addRandomTile, 200);
 }
 
-function saveGame(){
-    localStorage.setItem("2048save",JSON.stringify({grid,score}));
-}
-
-function restartGame(){
-    location.reload();
-}
-
-/* controls */
-document.addEventListener("keydown",e=>{
-    if(e.key==="ArrowLeft") move("left");
-    if(e.key==="ArrowRight") move("right");
-    if(e.key==="ArrowUp") move("up");
-    if(e.key==="ArrowDown") move("down");
+/* ===== УПРАВЛЕНИЕ ===== */
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") move("left");
+    if (e.key === "ArrowRight") move("right");
+    if (e.key === "ArrowUp") move("up");
+    if (e.key === "ArrowDown") move("down");
 });
 
-document.getElementById("left").onclick=()=>move("left");
-document.getElementById("right").onclick=()=>move("right");
-document.getElementById("up").onclick=()=>move("up");
-document.getElementById("down").onclick=()=>move("down");
-document.getElementById("undo").onclick=restoreUndo;
-document.getElementById("restart").onclick=restartGame;
+document.getElementById("undo").onclick = undo;
+document.getElementById("restart").onclick = () => location.reload();
 
-/* start */
-addRandom(); addRandom();
+/* ===== СТАРТ ===== */
+addRandomTile();
+addRandomTile();
